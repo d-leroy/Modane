@@ -42,6 +42,7 @@ class CppMethodExtensions
 
 	static def getVarClassContent(CppMethod it)
 	'''
+		«/* TODO Create execution context structs. */»
 		//! Classe de variable pour «name»
 		struct «varClassName» final
 		{
@@ -128,6 +129,7 @@ class CppMethodExtensions
 
 	static def getBaseClassBody(CppMethod it)
 	'''
+		«/* TODO: Insert monilogger embeddings (before, replace, after). */»
 		«callerSignature»«IF override» override«ENDIF»
 		{
 		  «insertDebugMsg»

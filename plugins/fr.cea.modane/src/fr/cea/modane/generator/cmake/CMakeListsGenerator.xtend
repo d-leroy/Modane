@@ -38,6 +38,8 @@ class CMakeListsGenerator
 			target_include_directories(«packageFullyQualifiedName.shortName» PUBLIC ${CMAKE_SOURCE_DIR} ${CMAKE_BINARY_DIR})
 		«ENDIF»
 
+		«/* TODO: Add monilogger- and pybind11-specific content. */»
+
 		«FOR subPackageShortName : subPackageShortNames AFTER "\n"»
 			add_subdirectory(«subPackageShortName»)
 		«ENDFOR»
