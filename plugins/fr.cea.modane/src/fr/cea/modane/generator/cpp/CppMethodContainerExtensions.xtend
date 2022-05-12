@@ -42,8 +42,12 @@ class CppMethodContainerExtensions
 			// le fichier contenant les structures des variables
 			context.newFile(outputPath, varClassFileName, true, component)
 			cmakeFiles += varClassFileName
-			for (m  : allMethods) context.addContent(m.varClassContent)
-			// TODO: Add monilogger includes.
+			for (m  : allMethods)
+			{
+				context.addContent(m.varClassContent)
+				context.addContent(m.executionContextClassContent)
+			}
+			context.addInclude("MoniLogger.h")
 			context.generate(fsa)
 		}
 
@@ -53,8 +57,6 @@ class CppMethodContainerExtensions
 		context.newFile(outputPath, baseClassFileName, true, component)
 		cmakeFiles += baseClassFileName
 		for (i : interfaces) context.addInclude(i.outputPath, i.referencedFileName)
-
-		// TODO: Add monilogger includes.
 
 		// include de la classe des variables
 		if (context.generationOptions.variableAsArgs) context.addInclude(outputPath, varClassFileName)

@@ -42,7 +42,6 @@ class CppMethodExtensions
 
 	static def getVarClassContent(CppMethod it)
 	'''
-		«/* TODO Create execution context structs. */»
 		//! Classe de variable pour «name»
 		struct «varClassName» final
 		{
@@ -66,6 +65,48 @@ class CppMethodExtensions
 	static def getVarClassInstance(CppMethod it)
 	'''
 		«varClassName» vars«IF !allVars.empty»(«allVars.map[v | v.argName].join('\n    , ')»)«ENDIF»;
+	'''
+
+	static def getExecutionContextClassContent(CppMethod it)
+	'''
+		//! Classe de contexte d'exécution pour «name»
+		struct «executionContextClassName» final : MoniLogger::MoniLoggerExecutionContext
+		{
+		  «executionContextClassName»(«FOR a : callerArgs SEPARATOR ',\n    '»«a»«ENDFOR»,
+		      «varClassName» *vars,
+		      std::string name)
+		  : MoniLoggerExecutionContext(name)
+		  «IF allArgs.size > 0»«FOR a : allArgs SEPARATOR '\n,'» «a.name»(«a.name»)«ENDFOR»«ENDIF»
+		  , vars(vars)
+		  {}
+
+		  const «varClassName» *vars;
+		  «IF allArgs.size > 0»
+		  «FOR a : callerArgs»
+		  «a»;
+		  «ENDFOR»
+		  «FOR a : allArgs»
+
+		  const pybind11::object get_«a.name»() const {
+		    return pybind11::cast(«a.name»);
+		  }
+		  «ENDFOR»
+		  «ENDIF»
+		  «FOR v : allVars»
+
+		  const pybind11::object get_«v.fieldName»() const {
+		    return pybind11::cast(vars->«v.fieldName»);
+		  }
+  		  «ENDFOR»
+		};
+
+	'''
+
+	static def getExecutionContextClassName(CppMethod it) { containerName + name.toFirstUpper + 'ExecutionContext' }
+
+	static def getExecutionContextClassInstance(CppMethod it)
+	'''
+		std::shared_ptr<«executionContextClassName»> ctx(new «executionContextClassName»(«IF !allVars.empty»(«allVars.map[v | v.argName].join('\n    , ')»)«ENDIF»);
 	'''
 	
 	static def isItemTypeSpecialized(CppMethod it)	{ support == FunctionItemType::ITEM_TYPE_SPECIALIZED }
