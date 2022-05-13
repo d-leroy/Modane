@@ -34,7 +34,7 @@ class CMakeListsGenerator
 			«FOR axlFile : cMakeFiles.axlFilesForCMake AFTER "\n"»
 				arcane_generate_axl(«axlFile»)
 			«ENDFOR»
-			target_link_libraries(«packageFullyQualifiedName.shortName» PRIVATE arcane_full)
+			target_link_libraries(«packageFullyQualifiedName.shortName» PRIVATE arcane_full PUBLIC pybind11::embed moniloggerlib)
 			target_include_directories(«packageFullyQualifiedName.shortName» PUBLIC ${CMAKE_SOURCE_DIR} ${CMAKE_BINARY_DIR})
 		«ENDIF»
 
@@ -64,6 +64,14 @@ class CMakeListsGenerator
 		set(Arcane_ROOT «arcaneHome»)
 		include(«arcaneHome»/samples/ArcaneCompilerConfig.cmake)
 		find_package(Arcane REQUIRED)
+
+		set(PYBIND11_PYTHON_VERSION 3.8)
+		find_package(Python COMPONENTS Interpreter Development REQUIRED)
+		set(pybind11_DIR "${Python_SITELIB}/pybind11/share/cmake/pybind11")
+		find_package(pybind11 REQUIRED)
+		include_directories(${pybind11_INCLUDE_DIRS} ${Python_SITELIB}/monilogger/include)
+		add_library(moniloggerlib SHARED IMPORTED)
+		set_property(TARGET moniloggerlib PROPERTY IMPORTED_LOCATION ${Python_SITELIB}/monilogger/libmonilogger.so)
 
 		«FOR subPackageShortName : subPackageShortNames»
 		add_subdirectory(«subPackageShortName»)

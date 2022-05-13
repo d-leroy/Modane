@@ -76,22 +76,27 @@ class CppMethodExtensions
 		      «varClassName» *vars,
 		      std::string name)
 		  : MoniLoggerExecutionContext(name)
-		  «IF allArgs.size > 0»«FOR a : allArgs SEPARATOR '\n,'» «a.name»(«a.name»)«ENDFOR»«ENDIF»
+		  «IF itemTypeSpecialized || hasSupport», items(items)«ENDIF»
+		  «IF allArgs.size > 0», «FOR a : allArgs SEPARATOR '\n, '»«a.name»(«a.name»)«ENDFOR»«ENDIF»
 		  , vars(vars)
 		  {}
 
-		  const «varClassName» *vars;
-		  «IF allArgs.size > 0»
 		  «FOR a : callerArgs»
 		  «a»;
 		  «ENDFOR»
+		  const «varClassName» *vars;
+		  «IF itemTypeSpecialized || hasSupport»
+
+		  const pybind11::object get_items() const {
+		    return pybind11::cast(items);
+		  }
+  		  «ENDIF»
 		  «FOR a : allArgs»
 
 		  const pybind11::object get_«a.name»() const {
 		    return pybind11::cast(«a.name»);
 		  }
 		  «ENDFOR»
-		  «ENDIF»
 		  «FOR v : allVars»
 
 		  const pybind11::object get_«v.fieldName»() const {
@@ -104,9 +109,21 @@ class CppMethodExtensions
 
 	static def getExecutionContextClassName(CppMethod it) { containerName + name.toFirstUpper + 'ExecutionContext' }
 
+	static def getExecutionContextArgs(CppMethod it)
+	{
+		val args = newArrayList
+		if (itemTypeSpecialized) args += 'items'
+		else if (hasSupport) args += 'items'
+		args.addAll(allArgs.map[name])
+		if (!allVars.empty) args.add('&vars')
+		args.add('''"«name.toFirstUpper + 'ExecutionContext'»"''')
+		return args
+	}
+
 	static def getExecutionContextClassInstance(CppMethod it)
 	'''
-		std::shared_ptr<«executionContextClassName»> ctx(new «executionContextClassName»(«IF !allVars.empty»(«allVars.map[v | v.argName].join('\n    , ')»)«ENDIF»);
+		std::shared_ptr<«executionContextClassName»> ctx(
+		    new «executionContextClassName»(«executionContextArgs.join('\n    , ')»));
 	'''
 	
 	static def isItemTypeSpecialized(CppMethod it)	{ support == FunctionItemType::ITEM_TYPE_SPECIALIZED }
@@ -175,12 +192,15 @@ class CppMethodExtensions
 		{
 		  «insertDebugMsg»
 		  «IF GenerationContext::Current.generationOptions.variableAsArgs»«varClassInstance»«ENDIF»
+		  «executionContextClassInstance»
 		  «IF itemTypeSpecialized»
 		  T* t = static_cast<T*>(this);
-		  «itemTypeSpecializedClassName»<T> fclass(«getArgSequence('t').join(', ')»); 
-		  items.applyOperation(&fclass);
+		  «itemTypeSpecializedClassName»<T> fclass(«getArgSequence('t').join(', ')»);
+		  «wrapMethodContentWithMoniloggerInstrumentation(name.toUpperCase, '''items.applyOperation(&fclass);''')»
 		  «ELSEIF hasParallelLoops»
 		  T* t = static_cast<T*>(this);
+		  «wrapMethodContentWithMoniloggerInstrumentation(name.toUpperCase,
+		'''
 		  arcaneParallelForeach(items, [&](«support.literal»VectorView sub_items)
 		  {
 		    ENUMERATE_«support.literal.toUpperCase» (iitem, sub_items) {
@@ -188,16 +208,38 @@ class CppMethodExtensions
 		      t->«name»(«getArgSequence('item').join(', ')»);
 		    }
 		  });
+		''')»
 		  «ELSEIF hasSupport»
 		  T* t = static_cast<T*>(this);
+		  «wrapMethodContentWithMoniloggerInstrumentation(name.toUpperCase,
+		'''
 		  ENUMERATE_«support.literal.toUpperCase» (iitem, items) {
 		    const «support.literal» item = *iitem;
 		    t->«name»(«getArgSequence('item').join(', ')»);
 		  }
+		''')»
 		  «ELSE»
-		  «IF returnType !== null»return «ENDIF»this->«name»(«argSequence.join(', ')»);
+		  «IF returnType !== null»
+		  «returnType.typeName» result;
+		  «wrapMethodContentWithMoniloggerInstrumentation(name.toUpperCase,'''result = this->«name»(«argSequence.join(', ')»);''')»
+		  return result;
+		  «ELSE»
+		  «wrapMethodContentWithMoniloggerInstrumentation(name.toUpperCase,'''this->«name»(«argSequence.join(', ')»);''')»
+		  «ENDIF»
 		  «ENDIF»
 		}
+	'''
+
+	static def wrapMethodContentWithMoniloggerInstrumentation(String baseEventName, String content)
+	'''
+		MoniLogger::trigger(«baseEventName»_BEFORE, ctx);
+		if (MoniLogger::has_registered_moniloggers(«baseEventName»_REPLACE))
+		{
+		  MoniLogger::trigger(«baseEventName»_REPLACE, ctx);
+		} else {
+		  «content»
+		}
+		MoniLogger::trigger(«baseEventName»_AFTER, ctx);
 	'''
 
 	static def getItemTypeSpecializedHeaderContent(CppMethod it)
