@@ -72,8 +72,7 @@ class CppMethodExtensions
 		//! Classe de contexte d'exécution pour «name»
 		struct «executionContextClassName» final : MoniLogger::MoniLoggerExecutionContext
 		{
-		  «executionContextClassName»(«FOR a : callerArgs SEPARATOR ',\n    '»«a»«ENDFOR»,
-		      «varClassName» *vars,
+		  «executionContextClassName»(«FOR a : callerArgs SEPARATOR ',\n    ' AFTER ',\n    '»«a»«ENDFOR»«varClassName» *vars,
 		      std::string name)
 		  : MoniLoggerExecutionContext(name)
 		  «IF itemTypeSpecialized || hasSupport», items(items)«ENDIF»

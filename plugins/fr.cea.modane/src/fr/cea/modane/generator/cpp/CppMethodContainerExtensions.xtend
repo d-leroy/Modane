@@ -42,6 +42,7 @@ class CppMethodContainerExtensions
 			// le fichier contenant les structures des variables
 			context.newFile(outputPath, varClassFileName, true, component)
 			cmakeFiles += varClassFileName
+			context.addContent(varClassBindingContent)
 			for (m  : allMethods)
 			{
 				context.addContent(m.varClassContent)
@@ -140,6 +141,14 @@ class CppMethodContainerExtensions
 		: public Arcane«shortName»Object
 		«ENDIF»
 		{
+		 private:
+		  «FOR m : methodsToOverwrite»
+		  «val baseEventName = m.name.toUpperCase»
+		  size_t «baseEventName»_BEFORE;
+		  size_t «baseEventName»_REPLACE;
+		  size_t «baseEventName»_AFTER;
+		  «ENDFOR»
+
 		 public:  // ***** CONSTRUCTEUR & DESTRUCTEUR
 		  «IF modaneElement instanceof Interface»
 		  explicit «baseClassName»(IMesh* mesh) 
@@ -155,6 +164,11 @@ class CppMethodContainerExtensions
 		  «ENDFOR»
 		  {
 		    «insertDebugMsg»
+		    «FOR m : methodsToOverwrite»
+		    «m.name.toUpperCase»_BEFORE = MoniLogger::register_base_event("«baseClassName + "." + m.name.toFirstUpper».Before");
+		    «m.name.toUpperCase»_REPLACE = MoniLogger::register_base_event("«baseClassName + "." + m.name.toFirstUpper».Replace");
+		    «m.name.toUpperCase»_AFTER = MoniLogger::register_base_event("«baseClassName + "." + m.name.toFirstUpper».After");
+		    «ENDFOR»
 		  }
 
 		  virtual ~«baseClassName»()
@@ -315,6 +329,32 @@ class CppMethodContainerExtensions
 	{ 
 		GenerationContext::GenFilePrefix + developerClassName + 'Vars' + GenerationContext::HeaderExtension
 	}
+	
+	// TODO finish this.
+	private static def getVarClassBindingContent(CppMethodContainer it)
+	'''
+		PYBIND11_EMBEDDED_MODULE(«it.classNameSuffix», m) {
+		  «FOR m : allMethods»
+		  pybind11::class_<MicroHydro::«m.executionContextClassName», std::shared_ptr<MicroHydro::«m.executionContextClassName»>, MoniLogger::MoniLoggerExecutionContext>(m, "«m.executionContextClassName»")
+		    .def_property_readonly("items", &MicroHydro::MoveNodesExecutionContext::get_items)
+		    «IF m.itemTypeSpecialized || m.hasSupport».def_property_readonly("items", &MicroHydro::«m.executionContextClassName»::get_items)«ENDIF»
+		    «FOR a : m.allArgs SEPARATOR '\n, '».def_property_readonly("node_coord", &MicroHydro::MoveNodesExecutionContext::get_m_node_coord)«ENDFOR»
+		    .def_property_readonly("node_coord", &MicroHydro::MoveNodesExecutionContext::get_m_node_coord)
+		    .def("__str__", [](MicroHydro::MoveNodesExecutionContext &self)
+		    {
+		      std::ostringstream oss;
+		      oss << "[" << self.name << "]";
+		      return oss.str();
+		    })
+		    .def("__repr__", [](MicroHydro::MoveNodesExecutionContext &self)
+		    {
+		      std::ostringstream oss;
+		      oss << "[" << self.name << "]";
+		      return oss.str();
+		    });
+			«ENDFOR»
+		}
+	'''
 
 	private static def isComponent(CppMethodContainer it)
 	{
