@@ -42,12 +42,12 @@ class CppMethodContainerExtensions
 			// le fichier contenant les structures des variables
 			context.newFile(outputPath, varClassFileName, true, component)
 			cmakeFiles += varClassFileName
-			context.addContent(varClassBindingContent)
 			for (m  : allMethods)
 			{
 				context.addContent(m.varClassContent)
 				context.addContent(m.executionContextClassContent)
 			}
+			context.addContent(varClassBindingContent)
 			context.addInclude("MoniLogger.h")
 			context.generate(fsa)
 		}
@@ -330,29 +330,29 @@ class CppMethodContainerExtensions
 		GenerationContext::GenFilePrefix + developerClassName + 'Vars' + GenerationContext::HeaderExtension
 	}
 	
-	// TODO finish this.
 	private static def getVarClassBindingContent(CppMethodContainer it)
 	'''
-		PYBIND11_EMBEDDED_MODULE(«it.classNameSuffix», m) {
+		«val context = GenerationContext::Current»
+		PYBIND11_EMBEDDED_MODULE(«context.nsName.toLowerCase»_«shortName.toLowerCase», m)
+		{
 		  «FOR m : allMethods»
-		  pybind11::class_<MicroHydro::«m.executionContextClassName», std::shared_ptr<MicroHydro::«m.executionContextClassName»>, MoniLogger::MoniLoggerExecutionContext>(m, "«m.executionContextClassName»")
-		    .def_property_readonly("items", &MicroHydro::MoveNodesExecutionContext::get_items)
-		    «IF m.itemTypeSpecialized || m.hasSupport».def_property_readonly("items", &MicroHydro::«m.executionContextClassName»::get_items)«ENDIF»
-		    «FOR a : m.allArgs SEPARATOR '\n, '».def_property_readonly("node_coord", &MicroHydro::MoveNodesExecutionContext::get_m_node_coord)«ENDFOR»
-		    .def_property_readonly("node_coord", &MicroHydro::MoveNodesExecutionContext::get_m_node_coord)
-		    .def("__str__", [](MicroHydro::MoveNodesExecutionContext &self)
+		  pybind11::class_<«context.nsName»::«m.executionContextClassName», std::shared_ptr<«context.nsName»::«m.executionContextClassName»>, MoniLogger::MoniLoggerExecutionContext>(m, "«m.executionContextClassName»")
+		    «IF m.itemTypeSpecialized || m.hasSupport».def_property_readonly("items", &«context.nsName»::«m.executionContextClassName»::get_items)«ENDIF»
+		    «FOR a : m.allArgs SEPARATOR '\n'».def_property_readonly("«a.name»", &«context.nsName»::«m.executionContextClassName»::get_«a.name»)«ENDFOR»
+		    «FOR v : m.allVars SEPARATOR '\n'».def_property_readonly("«v.name»", &«context.nsName»::«m.executionContextClassName»::get_«v.fieldName»)«ENDFOR»
+		    .def("__str__", [](«context.nsName»::«m.executionContextClassName» &self)
 		    {
 		      std::ostringstream oss;
 		      oss << "[" << self.name << "]";
 		      return oss.str();
 		    })
-		    .def("__repr__", [](MicroHydro::MoveNodesExecutionContext &self)
+		    .def("__repr__", [](«context.nsName»::«m.executionContextClassName» &self)
 		    {
 		      std::ostringstream oss;
 		      oss << "[" << self.name << "]";
 		      return oss.str();
 		    });
-			«ENDFOR»
+		  «ENDFOR»
 		}
 	'''
 

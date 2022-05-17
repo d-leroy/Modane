@@ -72,18 +72,17 @@ class CppMethodExtensions
 		//! Classe de contexte d'exécution pour «name»
 		struct «executionContextClassName» final : MoniLogger::MoniLoggerExecutionContext
 		{
-		  «executionContextClassName»(«FOR a : callerArgs SEPARATOR ',\n    ' AFTER ',\n    '»«a»«ENDFOR»«varClassName» *vars,
-		      std::string name)
+		  «executionContextClassName»(«FOR a : callerArgs SEPARATOR ',\n    ' AFTER ',\n    '»«a»«ENDFOR»«IF !allVars.empty»«varClassName» *vars,«'\n'»    «ENDIF»std::string name)
 		  : MoniLoggerExecutionContext(name)
 		  «IF itemTypeSpecialized || hasSupport», items(items)«ENDIF»
-		  «IF allArgs.size > 0», «FOR a : allArgs SEPARATOR '\n, '»«a.name»(«a.name»)«ENDFOR»«ENDIF»
-		  , vars(vars)
+		  «IF !allArgs.empty», «FOR a : allArgs SEPARATOR '\n, '»«a.name»(«a.name»)«ENDFOR»«ENDIF»
+		  «IF !allVars.empty», vars(vars)«ENDIF»
 		  {}
-
+		  «IF !callerArgs.empty || !allVars.empty»«'\n'»«ENDIF»
 		  «FOR a : callerArgs»
 		  «a»;
 		  «ENDFOR»
-		  const «varClassName» *vars;
+		  «IF !allVars.empty»const «varClassName» *vars;«ENDIF»
 		  «IF itemTypeSpecialized || hasSupport»
 
 		  const pybind11::object get_items() const {
