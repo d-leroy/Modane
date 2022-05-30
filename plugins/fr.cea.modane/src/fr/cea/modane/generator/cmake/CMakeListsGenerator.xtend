@@ -34,11 +34,11 @@ class CMakeListsGenerator
 			«FOR axlFile : cMakeFiles.axlFilesForCMake AFTER "\n"»
 				arcane_generate_axl(«axlFile»)
 			«ENDFOR»
-			target_link_libraries(«packageFullyQualifiedName.shortName» PRIVATE arcane_full PUBLIC pybind11::embed moniloggerlib)
+			target_link_libraries(«packageFullyQualifiedName.shortName» PRIVATE arcane_full PUBLIC pybind11::embed scihooklib)
 			target_include_directories(«packageFullyQualifiedName.shortName» PUBLIC ${CMAKE_SOURCE_DIR} ${CMAKE_BINARY_DIR})
 		«ENDIF»
 
-		«/* TODO: Add monilogger- and pybind11-specific content. */»
+		«/* TODO: Add scihook- and pybind11-specific content. */»
 
 		«FOR subPackageShortName : subPackageShortNames AFTER "\n"»
 			add_subdirectory(«subPackageShortName»)
@@ -69,9 +69,9 @@ class CMakeListsGenerator
 		find_package(Python COMPONENTS Interpreter Development REQUIRED)
 		set(pybind11_DIR "${Python_SITELIB}/pybind11/share/cmake/pybind11")
 		find_package(pybind11 REQUIRED)
-		include_directories(${pybind11_INCLUDE_DIRS} ${Python_SITELIB}/monilogger/include)
-		add_library(moniloggerlib SHARED IMPORTED)
-		set_property(TARGET moniloggerlib PROPERTY IMPORTED_LOCATION ${Python_SITELIB}/monilogger/libmonilogger.so)
+		include_directories(${pybind11_INCLUDE_DIRS} ${Python_SITELIB}/scihook/include)
+		add_library(scihooklib SHARED IMPORTED)
+		set_property(TARGET scihooklib PROPERTY IMPORTED_LOCATION ${Python_SITELIB}/scihook/libscihook.so)
 
 		«FOR subPackageShortName : subPackageShortNames»
 		add_subdirectory(«subPackageShortName»)

@@ -48,7 +48,7 @@ class CppMethodContainerExtensions
 				context.addContent(m.executionContextClassContent)
 			}
 			context.addContent(varClassBindingContent)
-			context.addInclude("MoniLogger.h")
+			context.addInclude("SciHook.h")
 			context.generate(fsa)
 		}
 
@@ -165,9 +165,9 @@ class CppMethodContainerExtensions
 		  {
 		    «insertDebugMsg»
 		    «FOR m : methodsToOverwrite»
-		    «m.name.toUpperCase»_BEFORE = MoniLogger::register_base_event("«baseClassName + "." + m.name.toFirstUpper».Before");
-		    «m.name.toUpperCase»_REPLACE = MoniLogger::register_base_event("«baseClassName + "." + m.name.toFirstUpper».Replace");
-		    «m.name.toUpperCase»_AFTER = MoniLogger::register_base_event("«baseClassName + "." + m.name.toFirstUpper».After");
+		    «m.name.toUpperCase»_BEFORE = SciHook::register_base_event("«baseClassName + "." + m.name.toFirstUpper».Before");
+		    «m.name.toUpperCase»_REPLACE = SciHook::register_base_event("«baseClassName + "." + m.name.toFirstUpper».Replace");
+		    «m.name.toUpperCase»_AFTER = SciHook::register_base_event("«baseClassName + "." + m.name.toFirstUpper».After");
 		    «ENDFOR»
 		  }
 
@@ -336,7 +336,7 @@ class CppMethodContainerExtensions
 		PYBIND11_EMBEDDED_MODULE(«context.nsName.toLowerCase»_«shortName.toLowerCase», m)
 		{
 		  «FOR m : allMethods»
-		  pybind11::class_<«context.nsName»::«m.executionContextClassName», std::shared_ptr<«context.nsName»::«m.executionContextClassName»>, MoniLogger::MoniLoggerExecutionContext>(m, "«m.executionContextClassName»")
+		  pybind11::class_<«context.nsName»::«m.executionContextClassName», std::shared_ptr<«context.nsName»::«m.executionContextClassName»>, SciHook::SciHookExecutionContext>(m, "«m.executionContextClassName»")
 		    «IF m.itemTypeSpecialized || m.hasSupport».def_property_readonly("items", &«context.nsName»::«m.executionContextClassName»::get_items)«ENDIF»
 		    «FOR a : m.allArgs SEPARATOR '\n'».def_property_readonly("«a.name»", &«context.nsName»::«m.executionContextClassName»::get_«a.name»)«ENDFOR»
 		    «FOR v : m.allVars SEPARATOR '\n'».def_property_readonly("«v.name»", &«context.nsName»::«m.executionContextClassName»::get_«v.fieldName»)«ENDFOR»

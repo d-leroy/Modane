@@ -70,10 +70,10 @@ class CppMethodExtensions
 	static def getExecutionContextClassContent(CppMethod it)
 	'''
 		//! Classe de contexte d'exécution pour «name»
-		struct «executionContextClassName» final : MoniLogger::MoniLoggerExecutionContext
+		struct «executionContextClassName» final : SciHook::SciHookExecutionContext
 		{
 		  «executionContextClassName»(«FOR a : callerArgs SEPARATOR ',\n    ' AFTER ',\n    '»«a»«ENDFOR»«IF !allVars.empty»«varClassName» *vars,«'\n'»    «ENDIF»std::string name)
-		  : MoniLoggerExecutionContext(name)
+		  : SciHookExecutionContext(name)
 		  «IF itemTypeSpecialized || hasSupport», items(items)«ENDIF»
 		  «IF !allArgs.empty», «FOR a : allArgs SEPARATOR '\n, '»«a.name»(«a.name»)«ENDFOR»«ENDIF»
 		  «IF !allVars.empty», vars(vars)«ENDIF»
@@ -185,7 +185,7 @@ class CppMethodExtensions
 
 	static def getBaseClassBody(CppMethod it)
 	'''
-		«/* TODO: Insert monilogger embeddings (before, replace, after). */»
+		«/* TODO: Insert SciHook embeddings (before, replace, after). */»
 		«callerSignature»«IF override» override«ENDIF»
 		{
 		  «insertDebugMsg»
@@ -194,10 +194,10 @@ class CppMethodExtensions
 		  «IF itemTypeSpecialized»
 		  T* t = static_cast<T*>(this);
 		  «itemTypeSpecializedClassName»<T> fclass(«getArgSequence('t').join(', ')»);
-		  «wrapMethodContentWithMoniloggerInstrumentation(name.toUpperCase, '''items.applyOperation(&fclass);''')»
+		  «wrapMethodContentWithSciHookInstrumentation(name.toUpperCase, '''items.applyOperation(&fclass);''')»
 		  «ELSEIF hasParallelLoops»
 		  T* t = static_cast<T*>(this);
-		  «wrapMethodContentWithMoniloggerInstrumentation(name.toUpperCase,
+		  «wrapMethodContentWithSciHookInstrumentation(name.toUpperCase,
 		'''
 		  arcaneParallelForeach(items, [&](«support.literal»VectorView sub_items)
 		  {
@@ -209,7 +209,7 @@ class CppMethodExtensions
 		''')»
 		  «ELSEIF hasSupport»
 		  T* t = static_cast<T*>(this);
-		  «wrapMethodContentWithMoniloggerInstrumentation(name.toUpperCase,
+		  «wrapMethodContentWithSciHookInstrumentation(name.toUpperCase,
 		'''
 		  ENUMERATE_«support.literal.toUpperCase» (iitem, items) {
 		    const «support.literal» item = *iitem;
@@ -219,25 +219,25 @@ class CppMethodExtensions
 		  «ELSE»
 		  «IF returnType !== null»
 		  «returnType.typeName» result;
-		  «wrapMethodContentWithMoniloggerInstrumentation(name.toUpperCase,'''result = this->«name»(«argSequence.join(', ')»);''')»
+		  «wrapMethodContentWithSciHookInstrumentation(name.toUpperCase,'''result = this->«name»(«argSequence.join(', ')»);''')»
 		  return result;
 		  «ELSE»
-		  «wrapMethodContentWithMoniloggerInstrumentation(name.toUpperCase,'''this->«name»(«argSequence.join(', ')»);''')»
+		  «wrapMethodContentWithSciHookInstrumentation(name.toUpperCase,'''this->«name»(«argSequence.join(', ')»);''')»
 		  «ENDIF»
 		  «ENDIF»
 		}
 	'''
 
-	static def wrapMethodContentWithMoniloggerInstrumentation(String baseEventName, String content)
+	static def wrapMethodContentWithSciHookInstrumentation(String baseEventName, String content)
 	'''
-		MoniLogger::trigger(«baseEventName»_BEFORE, ctx);
-		if (MoniLogger::has_registered_moniloggers(«baseEventName»_REPLACE))
+		SciHook::trigger(«baseEventName»_BEFORE, ctx);
+		if (SciHook::has_registered_scihooks(«baseEventName»_REPLACE))
 		{
-		  MoniLogger::trigger(«baseEventName»_REPLACE, ctx);
+		  SciHook::trigger(«baseEventName»_REPLACE, ctx);
 		} else {
 		  «content»
 		}
-		MoniLogger::trigger(«baseEventName»_AFTER, ctx);
+		SciHook::trigger(«baseEventName»_AFTER, ctx);
 	'''
 
 	static def getItemTypeSpecializedHeaderContent(CppMethod it)
