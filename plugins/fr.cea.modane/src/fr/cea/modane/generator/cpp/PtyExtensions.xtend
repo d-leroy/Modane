@@ -102,13 +102,19 @@ class PtyExtensions extends fr.cea.modane.PtyExtensions
 		}
 		else
 		{
-			type.typeName	
+			type.typeName
 		}
 	}
 
 	static def getAbstractGetterContent(Pty it)
 	'''
-		«IF description !== null »/*! «description» */«ENDIF»
+		«IF description !== null »
+		/*!
+		 «FOR l : fromDescription»
+		 * «l»
+		 «ENDFOR»
+		 */
+		«ENDIF»
 		virtual «returnTypeName» «getterName»() = 0;
 	'''
 
@@ -116,7 +122,7 @@ class PtyExtensions extends fr.cea.modane.PtyExtensions
 	'''
 		virtual bool «hasName»() const = 0;
 	'''
-	
+
 	/** 
 	 * Attention pour la compatibilité avec les méthodes du CaseOption,
 	 * le getter ne doit pas être 'const'.

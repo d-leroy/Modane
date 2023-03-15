@@ -34,7 +34,7 @@ class PtyExtensions
 {
 	static def CharSequence getContent(Pty it)
 	'''
-		«IF !description.nullOrEmpty»<!-- «description» -->«ENDIF»
+		«IF !description.comment.nullOrEmpty»<!-- «description» -->«ENDIF»
 		«getContent(type)»
 	'''
 

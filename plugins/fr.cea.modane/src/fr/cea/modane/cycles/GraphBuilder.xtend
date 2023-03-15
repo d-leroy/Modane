@@ -34,6 +34,8 @@ import org.eclipse.emf.ecore.EReference
 import static fr.cea.modane.ModaneModelExtensions.*
 
 import static extension fr.cea.modane.EObjectExtensions.*
+import static extension fr.cea.modane.EntryPointExtensions.*
+import static extension fr.cea.modane.FunctionExtensions.*
 import static extension fr.cea.modane.ModaneElementExtensions.*
 
 /** Permet de construire un graphe à partir d'une liste de modèles */

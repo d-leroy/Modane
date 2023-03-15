@@ -209,9 +209,8 @@ public class ModaneMatcher extends ModaneSwitch<SpecificMatch> {
 						return SpecificMatch.UNMATCH;
 					}
 					// Values must be the same
-					if (	(e1.getValue() == null && e2.getValue() != null)
-							|| (e1.getValue() != null && e2.getValue() == null)
-							|| !e1.getValue().equals(e2.getValue())	) {
+					if ( (e1.isValueProvided() != e2.isValueProvided())
+							|| (e1.getValue() != e2.getValue()) ) {
 						return SpecificMatch.UNMATCH;
 					}
 				}
@@ -250,11 +249,11 @@ public class ModaneMatcher extends ModaneSwitch<SpecificMatch> {
 			// If names match
 			if (o1.getName() != null && o1.getName().equals(o2.getName())) {
 				// Support, multiplicity and type must match
-				if (o1.getSupport() != null && o1.getSupport().equals(o2.getSupport())
+				if (o1.getSupports() != null && o1.getSupports().equals(o2.getSupports())
 						&& o1.getMultiplicity() != null && o1.getMultiplicity().equals(o2.getMultiplicity())
 						&& o1.getType() != null && o1.getType().equals(o2.getType())) {
 					return SpecificMatch.MATCH;
-				}				
+				}
 			}
 		}
 		
@@ -527,10 +526,8 @@ public class ModaneMatcher extends ModaneSwitch<SpecificMatch> {
 
 		// Containers must match
 		if (matchingContainers(o1, o2)) {
-			// Direction and variable must match
-			if (o1.getDirection() != null && o1.getDirection().equals(o2.getDirection())) {
-				return doSwitchBetweenObjects(o1.getVariable(), o2.getVariable());
-			}
+			// Variable must match
+			return doSwitchBetweenObjects(o1.getVariable(), o2.getVariable());
 		}
 		
 		return SpecificMatch.UNMATCH;
@@ -555,7 +552,7 @@ public class ModaneMatcher extends ModaneSwitch<SpecificMatch> {
 			if (similarStrings(o1.getName(), o2.getName())) {
 				// Compare types, support and direction
 				if (o1.getType() != null && o1.getType().equals(o2.getType())
-						&& o1.getSupport() != null && o1.getSupport().equals(o2.getSupport())
+						&& o1.getSupports() != null && o1.getSupports().equals(o2.getSupports())
 						&& o1.getDirection() != null && o1.getDirection().equals(o2.getDirection())) {
 					return SpecificMatch.MATCH;
 				}

@@ -9,6 +9,7 @@
  *******************************************************************************/
 package fr.cea.modane.generator.cpp
 
+import fr.cea.modane.generator.cmake.ModelInfo
 import fr.cea.modane.modane.Direction
 import fr.cea.modane.modane.Function
 import fr.cea.modane.modane.Interface
@@ -17,10 +18,10 @@ import fr.cea.modane.modane.Module
 import fr.cea.modane.modane.Pty
 import fr.cea.modane.modane.Reference
 import fr.cea.modane.modane.Service
-import java.util.Collection
 import org.eclipse.xtext.generator.IFileSystemAccess
 
 import static extension fr.cea.modane.ModaneElementExtensions.*
+import static extension fr.cea.modane.ModaneStringExtensions.*
 import static extension fr.cea.modane.PtyExtensions.*
 import static extension fr.cea.modane.generator.cpp.CppMethodExtensions.*
 import static extension fr.cea.modane.generator.cpp.ItemTypeExtensions.*
@@ -30,9 +31,11 @@ import static extension fr.cea.modane.generator.cpp.ReferenceableExtensions.*
 
 class CppMethodContainerExtensions
 {
-	static def compile(CppMethodContainer it, IFileSystemAccess fsa, Collection<String> cmakeFiles)
+	static def compile(CppMethodContainer it, IFileSystemAccess fsa, boolean profAccInstrumentation, boolean sciHookInstrumentation, ModelInfo modelInfo)
 	{
 		val context = GenerationContext::Current
+
+		val instrument = sciHookInstrumentation && !methodsToOverwrite.empty
 
 		//
 		// le fichier avec les classes de variables
@@ -41,8 +44,67 @@ class CppMethodContainerExtensions
 		{
 			// le fichier contenant les structures des variables
 			context.newFile(outputPath, varClassFileName, true, component)
-			cmakeFiles += varClassFileName
-			for (m  : allMethods) context.addContent(m.varClassContent)
+			modelInfo.cppFiles += varClassFileName
+			for (m  : allMethods)
+			{
+				context.addContent(m.varClassContent)
+			}
+			context.generate(fsa)
+		}
+
+		//
+		// le fichier avec les contextes d'exécution SciHook
+		//
+		if (instrument) {
+			context.newFile(outputPath, contextsClassFileName, true, component)
+			modelInfo.cppFiles += contextsClassFileName
+			for (m  : methodsToOverwrite)
+			{
+				// We only generate a dedicated execution context struct if it would contain variables
+				if (m.executionContextArgs.length > 1) context.addContent(m.executionContextClassContent)
+			}
+			context.addInclude("scihook/SciHook.h")
+			context.generate(fsa)
+		}
+
+		//
+		// le fichier avec les bindings SciHook
+		//
+		if (instrument && methodsToOverwrite.exists[executionContextArgs.size > 1]) {
+			context.newFile(outputPath, bindingsClassFileName, true, component)
+			modelInfo.cppFiles += bindingsClassFileName
+			modelInfo.targets += "scihook"
+			for (i : interfaces) context.addInclude(i.outputPath, i.referencedFileName)
+
+			// fonctions itemTypeSpecialized
+			for (m  : allMethods.filter[ m | m.itemTypeSpecialized]) context.addInclude(outputPath, m.itemTypeSpecializedClassHeaderFileName)
+
+			if (allMethods.exists[m | m.itemTypeSpecialized])
+				context.addInclude("arcane/utils/NotImplementedException.h")
+			if (allMethods.exists[m | m.hasParallelLoops &&  m.support.component])
+				context.addInclude("arcane/materials/MatConcurrency.h")
+			else if (allMethods.exists[m | m.hasParallelLoops])
+				context.addInclude("arcane/Concurrency.h")
+
+			if (context.generationOptions.variableAsArgs) context.addInclude(outputPath, varClassFileName)
+			context.addInclude(outputPath, contextsClassFileName)
+
+			//FIXME: get missing includes by side-effect
+			getBaseClassContent(profAccInstrumentation, sciHookInstrumentation)
+			context.addInclude("scihook/scihookdefs.h")
+			context.addContent(bindingsClassContent)
+			if (hasAxl)
+			{
+				val axlHFileName = shortName + '_axl.h'
+				context.addInclude(outputPath, axlHFileName)
+				modelInfo.cppFiles += axlHFileName
+			}
+			else // classe d'implémentation qui n'est pas un service
+			{
+				context.addInclude("arcane/IMesh.h")
+				context.addInclude("arcane/MeshAccessor.h")
+				context.addInclude("arcane/utils/TraceAccessor.h")
+			}
 			context.generate(fsa)
 		}
 
@@ -50,11 +112,16 @@ class CppMethodContainerExtensions
 		// le fichier avec la classe de base
 		//
 		context.newFile(outputPath, baseClassFileName, true, component)
-		cmakeFiles += baseClassFileName
+		modelInfo.cppFiles += baseClassFileName
 		for (i : interfaces) context.addInclude(i.outputPath, i.referencedFileName)
 
 		// include de la classe des variables
 		if (context.generationOptions.variableAsArgs) context.addInclude(outputPath, varClassFileName)
+		// include de la classe des contextes d'exécution
+		if (instrument) {
+			context.addInclude("scihook/scihookdefs.h")
+			context.addFlaggedInclude(outputPath, contextsClassFileName, sciHookIfDefContent)
+		}
 
 		// fonctions itemTypeSpecialized
 		for (m  : allMethods.filter[ m | m.itemTypeSpecialized]) context.addInclude(outputPath, m.itemTypeSpecializedClassHeaderFileName)
@@ -65,14 +132,19 @@ class CppMethodContainerExtensions
 			context.addInclude("arcane/materials/MatConcurrency.h")
 		else if (allMethods.exists[m | m.hasParallelLoops])
 			context.addInclude("arcane/Concurrency.h")
+		if (profAccInstrumentation && allMethods.exists[m | m.profAcc])
+		{
+			modelInfo.targets += "accenv"
+			context.addInclude("accenv/ProfAcc.h")
+		}
 
 		// Contenu de la classe de base
-		context.addContent(baseClassContent)
+		context.addContent(getBaseClassContent(profAccInstrumentation, sciHookInstrumentation))
 		if (hasAxl) 
 		{
 			val axlHFileName = shortName + '_axl.h'
 			context.addInclude(outputPath, axlHFileName)
-			cmakeFiles += axlHFileName
+			modelInfo.cppFiles += axlHFileName
 		}
 		else // classe d'implémentation qui n'est pas un service
 		{
@@ -87,14 +159,14 @@ class CppMethodContainerExtensions
 		//
 		// le .h
 		context.newFile(outputPath, developerHeaderFileName, false, component)
-		cmakeFiles += developerHeaderFileName
+		modelInfo.cppFiles += developerHeaderFileName
 		context.addInclude(outputPath, baseClassFileName)
 		context.addContent(developerHeaderContent)
 		context.generateIfNotExist(fsa)	
 
 		// le .cc
 		context.newFile(outputPath, developerBodyFileName, false, component)
-		cmakeFiles += developerBodyFileName
+		modelInfo.cppFiles += developerBodyFileName
 		context.addInclude(outputPath, developerHeaderFileName)
 		context.addContent(developerBodyContent)
 		context.generateIfNotExist(fsa)
@@ -105,7 +177,7 @@ class CppMethodContainerExtensions
 			// le .h (pas de .cc)
 			val hFileName = m.itemTypeSpecializedClassHeaderFileName
 			context.newFile(outputPath, hFileName, false, false)
-			cmakeFiles += hFileName
+			modelInfo.cppFiles += hFileName
 			context.addInclude("arcane/AbstractItemOperationByBasicType.h")
 			context.addInclude("arcane/Item.h")
 			context.addUsedNs("Arcane")
@@ -113,13 +185,15 @@ class CppMethodContainerExtensions
 			context.addContent(m.itemTypeSpecializedHeaderContent)
 			context.generate(fsa)
 		}
-	} 
+	}
 
-	private static def getBaseClassContent(CppMethodContainer it)
+	private static def getBaseClassContent(CppMethodContainer it, boolean profAccInstrumentation, boolean sciHookInstrumentation)
 	'''
 		/*!
-		 * \brief «modaneElement.eClass.name» «modaneElement.name» : classe de base. 
-		 * «modaneElement.description»
+		 * \brief «modaneElement.eClass.name» «modaneElement.name» : classe de base.
+		 «FOR l : modaneElement.fromDescription»
+		 «l»
+		 «ENDFOR»
 		 */
 		template<class T>
 		class «baseClassName»
@@ -131,6 +205,17 @@ class CppMethodContainerExtensions
 		: public Arcane«shortName»Object
 		«ENDIF»
 		{
+		 «IF sciHookInstrumentation»
+		 #if «sciHookIfDefContent»
+		 private:
+		  «FOR m : methodsToOverwrite»
+		  «val baseEventName = m.name.toUpperCase»
+		  size_t «baseEventName»_BEFORE;
+«««		  size_t «baseEventName»_REPLACE;
+		  size_t «baseEventName»_AFTER;
+		  «ENDFOR»
+		 #endif
+		 «ENDIF»
 		 public:  // ***** CONSTRUCTEUR & DESTRUCTEUR
 		  «IF modaneElement instanceof Interface»
 		  explicit «baseClassName»(IMesh* mesh) 
@@ -146,6 +231,15 @@ class CppMethodContainerExtensions
 		  «ENDFOR»
 		  {
 		    «insertDebugMsg»
+		    «IF sciHookInstrumentation»
+		    #if «sciHookIfDefContent»
+		    «FOR m : methodsToOverwrite»
+		    «m.name.toUpperCase»_BEFORE = SciHook::register_base_event("«baseClassName + "." + m.name.toFirstUpper».Before");
+«««		    «m.name.toUpperCase»_REPLACE = SciHook::register_base_event("«baseClassName + "." + m.name.toFirstUpper».Replace");
+		    «m.name.toUpperCase»_AFTER = SciHook::register_base_event("«baseClassName + "." + m.name.toFirstUpper».After");
+		    «ENDFOR»
+		    #endif
+		    «ENDIF»
 		  }
 
 		  virtual ~«baseClassName»()
@@ -180,10 +274,12 @@ class CppMethodContainerExtensions
 		  «FOR m : methodsToOverwrite» «/* Ne pas utiliser 'SEPARATOR '\n' car il y a des espaces en trop...*/»
 		  /*!
 		   «IF m.needDotGraph»«m.dotGraph»«ENDIF»
-		   «IF !m.description.nullOrEmpty»«m.description»«ENDIF»
+		   «FOR l : m.description»
+		   «l»
+		   «ENDFOR»
 		   Cette méthode construit les variables et appelle «developerClassName»::«m.name».
-		  */
-		  «m.baseClassBody»
+		   */
+		  «m.getBaseClassBody(debugVar, profAccInstrumentation, sciHookInstrumentation)»
 
 		  «ENDFOR»
 
@@ -220,7 +316,9 @@ class CppMethodContainerExtensions
 	'''
 		/*!
 		 * \brief «modaneElement.eClass.name» «modaneElement.name» : implémentation
-		 * «modaneElement.description»
+		 «FOR l : modaneElement.fromDescription»
+		 «l»
+		 «ENDFOR»
 		 */
 		class «developerClassName»
 		: public «baseClassName»<«developerClassName»>
@@ -302,10 +400,71 @@ class CppMethodContainerExtensions
 	private static def getBaseClassFileName(CppMethodContainer it) { GenerationContext::GenFilePrefix + baseClassName + GenerationContext::HeaderExtension }
 	private static def getOutputPath(CppMethodContainer it) { modaneElement.outputPath }
 
-	private static def getVarClassFileName(CppMethodContainer it) 
+	private static def getVarClassFileName(CppMethodContainer it)
 	{ 
 		GenerationContext::GenFilePrefix + developerClassName + 'Vars' + GenerationContext::HeaderExtension
 	}
+
+	private static def getContextsClassFileName(CppMethodContainer it)
+	{
+		GenerationContext::GenFilePrefix + developerClassName + 'Contexts' + GenerationContext::HeaderExtension
+	}
+
+	private static def getBindingsClassFileName(CppMethodContainer it)
+	{
+		GenerationContext::GenFilePrefix + developerClassName + 'Bindings' + GenerationContext::BodyExtension
+	}
+
+	private static def String getSciHookIfDefContent(CppMethodContainer it)
+	{
+		'''defined(SCIHOOK_ENABLED) && not defined(SCIHOOK_«debugVar»_DISABLED)'''
+	}
+
+	private static def String getDebugVar(CppMethodContainer it)
+	{
+		val context = GenerationContext::Current
+		val result = modaneElement.model.name.replace('.', '_').toUpperCase
+		context.cmakeVariables += '''SCIHOOK_«result»_DISABLED'''
+		return result
+	}
+
+	private static def getEmbeddedModuleName(CppMethodContainer it)
+	{
+		val context = GenerationContext::Current
+		val result = '''«context.nsName.toLowerCase»_«shortName.toLowerCase»'''
+		context.embeddedModules += result
+		return result
+	}
+
+	private static def getBindingsClassContent(CppMethodContainer it)
+	'''
+		#if «sciHookIfDefContent»
+		«val context = GenerationContext::Current»
+		PYBIND11_EMBEDDED_MODULE(«embeddedModuleName», m)
+		{
+		  «FOR m : methodsToOverwrite»
+		  «IF m.executionContextArgs.length > 1»
+		  pybind11::class_<«context.nsName»::«m.executionContextClassName», std::shared_ptr<«context.nsName»::«m.executionContextClassName»>, SciHook::SciHookExecutionContext>(m, "«m.executionContextClassName»")
+		    «IF m.itemTypeSpecialized || m.hasSupport».def_property_readonly("items", &«context.nsName»::«m.executionContextClassName»::get_items)«ENDIF»
+		    «FOR a : m.argDefinitions SEPARATOR '\n'».def_property_readonly("«a.name»", &«context.nsName»::«m.executionContextClassName»::get_«a.name»)«ENDFOR»
+		    «FOR v : m.allVars SEPARATOR '\n'».def_property_readonly("«v.name»", &«context.nsName»::«m.executionContextClassName»::get_«v.fieldName»)«ENDFOR»
+		    .def("__str__", [](«context.nsName»::«m.executionContextClassName» &self)
+		    {
+		      std::ostringstream oss;
+		      oss << "[" << self.name << "]";
+		      return oss.str();
+		    })
+		    .def("__repr__", [](«context.nsName»::«m.executionContextClassName» &self)
+		    {
+		      std::ostringstream oss;
+		      oss << "[" << self.name << "]";
+		      return oss.str();
+		    });
+		  «ENDIF»
+		  «ENDFOR»
+		}
+		#endif
+	'''
 
 	private static def isComponent(CppMethodContainer it)
 	{

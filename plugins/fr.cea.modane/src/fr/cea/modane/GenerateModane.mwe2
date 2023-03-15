@@ -46,7 +46,7 @@ Workflow {
 		}
 		language = StandardLanguage {
 			name = "fr.cea.modane.Modane"
-			fileExtensions = "modane"
+			fileExtensions = "m"
 
 			serializer = {
 				generateStub = false

@@ -9,10 +9,13 @@
  *******************************************************************************/
 package fr.cea.modane.generator.cpp
 
+import fr.cea.modane.modane.Item
 import fr.cea.modane.modane.ItemType
 import fr.cea.modane.modane.SimpleType
 import fr.cea.modane.modane.Variable
 import fr.cea.modane.modane.VariableMultiplicity
+import fr.cea.modane.modane.VariableMultiplicityType
+import java.util.List
 
 import static extension fr.cea.modane.ModaneStringExtensions.*
 
@@ -20,26 +23,34 @@ class VariableExtensions
 {	
 	static def getFieldName(Variable it) { 'm_' + name.separateWith('_') }
 	
-	static def getTypeName(Variable it) { getTypeName(type, support, multiplicity) }	
+	static def getTypeName(Variable it) { getTypeName(type, supports, multiplicity) }	
 
-	static def getTypeName(SimpleType varType, ItemType support, VariableMultiplicity mult) 
+	static def getTypeName(SimpleType varType, List<Item> supports, VariableMultiplicity mult) 
 	{
-		var tname = if (varType == SimpleType::BOOL) 'Byte' else varType.literal
+		var tname = if (varType == SimpleType::BOOL) 'Byte' else varType.getName
 		var result = ''
 
-		switch support
-		{
-			case ItemType::MAT_CELL : result = 'MaterialVariableCell'
-			case ItemType::ENV_CELL : result = 'EnvironmentVariableCell'
-			case ItemType::NO_ITEM : result = 'Variable'
-			default : result = 'Variable' + support.literal
+		if (supports.empty) {
+			result = 'Variable'
+		} else {
+			val support = supports.get(0)
+			switch support
+			{
+				case ItemType::MAT_CELL : result = 'MaterialVariableCell'
+				case ItemType::ENV_CELL : result = 'EnvironmentVariableCell'
+				default : result = 'Variable' + support.type.getName
+			}
 		}
+		
 
-		switch mult 
-		{
-			case VariableMultiplicity::SCALAR: result += if(support == ItemType::NO_ITEM) 'Scalar' + tname else tname
-			case VariableMultiplicity::ARRAY: result += 'Array' + tname
-			case VariableMultiplicity::ARRAY2: result += 'Array2' + tname
+		if (mult === null) {
+			result += supports.empty ? 'Scalar' + tname : tname
+		} else {
+			switch mult.type
+			{
+				case VariableMultiplicityType::ARRAY: result += 'Array' + tname
+				case VariableMultiplicityType::ARRAY2: result += 'Array2' + tname
+			}
 		}
 
 		return result;

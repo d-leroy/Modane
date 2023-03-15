@@ -21,33 +21,48 @@ class VariableExtensions
 
 	def getContent(Variable it)
 	'''
-		<variable field-name="«name.separateWith('_')»" name="«name»" data-type="«typeName»" item-kind="«itemKindName»"«IF family !== null» family-name="«family.name»"«ENDIF» dim="«dim»" dump="«dump»" need-sync="«needSync»" restore="«restore»" execution-depend="«executionDepend»"«componentExtension»>
+		<variable field-name="«name.separateWith('_')»" name="«name»" data-type="«typeName»" item-kind="«itemKindName»"«IF family !== null» family-name="«family.name»"«ENDIF» dim="«dim»" dump="«isDump»" need-sync="«isNeedSync»" restore="«isRestore»" execution-depend="«isExecutionDepend»"«componentExtension»>
 			«description.formatDescription»
 		</variable>
 	'''
 
-	private def getTypeName(Variable it) { type.literal.toLowerCase }
+	private def getTypeName(Variable it) { type.getName.toLowerCase }
 
 	private def getItemKindName(Variable it)
 	{
-		switch support
+		if (supports.empty)
 		{
-			case ItemType::MAT_CELL : 'cell'
-			case ItemType::ENV_CELL : 'cell'
-			case ItemType::NO_ITEM : 'none'
-			default : support.literal.toLowerCase
+			'none'
+		}
+		else
+		{
+			val firstSupport = supports.get(0)
+			switch firstSupport
+			{
+				case ItemType::MAT_CELL : 'cell'
+				case ItemType::ENV_CELL : 'cell'
+				default : firstSupport.type.getName.toLowerCase
+			}
 		}
 	}
 
-	private def getDim(Variable it) { multiplicity.ordinal }
+	private def getDim(Variable it) { multiplicity === null ? 0 : multiplicity.type.ordinal + 1 }
 	
 	private def getComponentExtension(Variable it)
 	{
-		switch support
+		if (supports.empty)
 		{
-			case ItemType::MAT_CELL : ' material="true"'
-			case ItemType::ENV_CELL : ' environment="true"'
-			default : ''
+			''
+		}
+		else
+		{
+			val firstSupport = supports.get(0)
+			switch firstSupport
+			{
+				case ItemType::MAT_CELL : ' material="true"'
+				case ItemType::ENV_CELL : ' environment="true"'
+				default : ''
+			}
 		}
 	}
 }

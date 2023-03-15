@@ -10,7 +10,6 @@
 package fr.cea.modane.generator.cpp
 
 import fr.cea.modane.modane.ArgDefinition
-import fr.cea.modane.modane.ArgMultiplicity
 import fr.cea.modane.modane.Direction
 import fr.cea.modane.modane.Item
 import fr.cea.modane.modane.PtyOrArgType
@@ -42,10 +41,10 @@ class ArgDefinitionExtensions
 	{
 		switch (it)
 		{
-			case direction == Direction::IN && multiplicity == ArgMultiplicity::SCALAR : type.inUniqueTypeName		
-			case direction == Direction::IN && multiplicity == ArgMultiplicity::ARRAY : type.inMultipleTypeName
-			case direction != Direction::IN && multiplicity == ArgMultiplicity::SCALAR : type.outUniqueTypeName
-			case direction != Direction::IN && multiplicity == ArgMultiplicity::ARRAY : type.outMultipleTypeName
+			case direction == Direction::IN && !multiple: type.inUniqueTypeName
+			case direction == Direction::IN &&  multiple: type.inMultipleTypeName
+			case direction != Direction::IN && !multiple: type.outUniqueTypeName
+			case direction != Direction::IN &&  multiple: type.outMultipleTypeName
 		}
 	} 
 	

@@ -12,6 +12,7 @@ package fr.cea.modane.uml
 import fr.cea.modane.modane.EntryPointAutoLoad
 import fr.cea.modane.modane.EntryPointLocation
 import fr.cea.modane.modane.FunctionItemType
+import fr.cea.modane.modane.ModaneFactory
 import java.util.List
 import org.eclipse.emf.ecore.EObject
 import org.eclipse.uml2.uml.EnumerationLiteral
@@ -64,12 +65,12 @@ class OperationExtensions
 	def getFuncSupport(Operation it)
 	{
 		if (isFuncItemTypeSpecialized)
-			FunctionItemType::ITEM_TYPE_SPECIALIZED
+			ModaneFactory::eINSTANCE.createFunctionItem => [type = FunctionItemType::ITEM_TYPE_SPECIALIZED]
 		else
 		{	
 			val umlSupport =getValue(profile.funcSt, "support") as EObject
-			if (umlSupport === null) FunctionItemType::NO_ITEM
-			else FunctionItemType::getByName(umlSupport.toUmlPrimitiveType.name) 
+			if (umlSupport === null) null
+			else ModaneFactory::eINSTANCE.createFunctionItem => [type = FunctionItemType::getByName(umlSupport.toUmlPrimitiveType.name)]
 		}
 	}
 	

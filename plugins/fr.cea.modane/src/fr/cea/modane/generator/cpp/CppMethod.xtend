@@ -11,19 +11,23 @@ package fr.cea.modane.generator.cpp
 
 import fr.cea.modane.modane.Arg
 import fr.cea.modane.modane.ArgDefinition
-import fr.cea.modane.modane.ArgMultiplicity
+import fr.cea.modane.modane.Direction
 import fr.cea.modane.modane.EntryPoint
 import fr.cea.modane.modane.Function
 import fr.cea.modane.modane.FunctionItemType
 import fr.cea.modane.modane.OverrideFunction
 import fr.cea.modane.modane.PtyOrArgType
 import fr.cea.modane.modane.VarDefinition
+import java.util.List
+
+import static extension fr.cea.modane.ModaneStringExtensions.*
 
 interface CppMethod 
 {
 	def String getName()
-	def String getDescription()
+	def List<String> getDescription()
 	def String getContainerName()
+	def CppMethodContainer getContainer()
 	def Iterable<? extends CppVariable> getAllVars()
 	def Iterable<ArgDefinition> getArgDefinitions()
 	def Iterable<? extends Arg> getAllArgs()
@@ -39,30 +43,35 @@ interface CppMethod
 class FunctionCppMethod implements CppMethod
 {
 	Function f
+	CppMethodContainer container
 	String containerName
 	
-	new(Function f, String containerName) 
+	new(Function f, CppMethodContainer container, String containerName) 
 	{ 
 		this.f = f
+		this.container = container;
 		this.containerName = containerName
 	}
 	
 	override getName() { f.name }
-	override getDescription() { f.description }
+	override getDescription() { f.fromDescription }
 	override getContainerName() { containerName }
+	override getContainer() { container }
 	override getArgDefinitions() { f.args.filter(ArgDefinition) }
 	override getAllArgs() { f.args }
 	override getCalls() { f.calls }
 	override getReturnType() { f.type }
-	override isMultiple() { f.multiplicity == ArgMultiplicity::ARRAY }
-	override getSupport() { f.support }
+	override isMultiple() { f.multiple }
+	override getSupport() { f.support === null ? null : f.support.type }
 	override isSequential() { f.sequential }
 	override isConst() { f.const }
 	override isOverride() { false }	
 	
 	override getAllVars() 
 	{ 
-		f.vars.map[v | new CppVarReference(v)] +
+		f.inVars.map[v | new CppVarReference(v, Direction::IN)] +
+		f.outVars.map[v | new CppVarReference(v, Direction::OUT)] +
+		f.inOutVars.map[v | new CppVarReference(v, Direction::INOUT)] +
 		f.args.filter(VarDefinition).map[v | new CppVarDefinition(v)]
 	}
 }
@@ -71,20 +80,24 @@ class OverrideFunctionCppMethod extends FunctionCppMethod
 {
 	OverrideFunction of
 	
-	new(OverrideFunction of, String containerName) 
-	{ 
-		super(of.func, containerName)
+	new(OverrideFunction of, CppMethodContainer container, String containerName) 
+	{
+		super(of.func, container, containerName)
 		this.of = of
 	}
 	
-	override getDescription() { of.description }
+	override getDescription() { of.fromDescription }
 	override getCalls() { of.calls }
 	override isOverride() { true }	
 	
 	override getAllVars() 
 	{ 
-		of.vars.map[v | new CppVarReference(v)] + 
-		of.func.vars.map[v | new CppVarReference(v)] +
+		of.inVars.map[v | new CppVarReference(v, Direction::IN)] +
+		of.outVars.map[v | new CppVarReference(v, Direction::OUT)] +
+		of.inOutVars.map[v | new CppVarReference(v, Direction::INOUT)] +
+		of.func.inVars.map[v | new CppVarReference(v, Direction::IN)] +
+		of.func.outVars.map[v | new CppVarReference(v, Direction::OUT)] +
+		of.func.inOutVars.map[v | new CppVarReference(v, Direction::INOUT)] +
 		of.func.args.filter(VarDefinition).map[v | new CppVarDefinition(v)]
 	}
 }
@@ -92,26 +105,32 @@ class OverrideFunctionCppMethod extends FunctionCppMethod
 class EntryPointCppMethod implements CppMethod
 {
 	EntryPoint ep
+	CppMethodContainer container
 	String containerName
 	
-	new(EntryPoint ep, String containerName) 
+	new(EntryPoint ep, CppMethodContainer container, String containerName) 
 	{ 
 		this.ep = ep
 		this.containerName = containerName
 	}
 
 	override getName() { ep.name }
-	override getDescription() { ep.description }
-	override getContainerName() { containerName }	
+	override getDescription() { ep.fromDescription }
+	override getContainerName() { containerName }
+	override getContainer() { container }
 	override getAllArgs() { newArrayList }
 	override getArgDefinitions() { newArrayList }
 	override getCalls() { ep.calls }
 	override getReturnType() { null }	
 	override isMultiple() { false }
-	override getSupport() { ep.support }
+	override getSupport() { ep.support === null ? null : ep.support.type }
 	override isSequential() { true }
 	override isConst() { false }
 	override isOverride() { false }	
 	
-	override getAllVars() { ep.vars.map[v | new CppVarReference(v)] }
+	override getAllVars() {
+		ep.inVars.map[v | new CppVarReference(v, Direction::IN)] +
+		ep.outVars.map[v | new CppVarReference(v, Direction::OUT)] +
+		ep.inOutVars.map[v | new CppVarReference(v, Direction::INOUT)]
+	}
 }

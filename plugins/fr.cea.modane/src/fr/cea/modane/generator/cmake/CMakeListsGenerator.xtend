@@ -16,27 +16,29 @@ class CMakeListsGenerator
 {
 	static val FileName = 'CMakeLists.txt'
 
-	def generate(IFileSystemAccess fsa, String packageFullyQualifiedName, Collection<String> subPackageShortNames, CMakeFiles cMakeFiles)
+	def generate(IFileSystemAccess fsa, String packageFullyQualifiedName, Collection<String> subPackageShortNames, ModelInfo modelInfo)
 	{
-		fsa.generateFile(packageFullyQualifiedName.path + '/' + FileName, getContent(packageFullyQualifiedName, subPackageShortNames, cMakeFiles))
+		fsa.generateFile(packageFullyQualifiedName.path + '/' + FileName, getContent(packageFullyQualifiedName, subPackageShortNames, modelInfo))
 	}
 
-	private def getContent(String packageFullyQualifiedName, Collection<String> subPackageShortNames, CMakeFiles cMakeFiles)
+	private def getContent(String packageFullyQualifiedName, Collection<String> subPackageShortNames, ModelInfo modelInfo)
 	'''
 		#
 		# Generated file - Do not overwrite
 		#
 		««« On ne garde que les fichiers cc (pas les h)
-		«val sources = cMakeFiles.cppFilesForCMake.filter[x | x.endsWith(".cc")] + cMakeFiles.axlFilesForCMake.map[x | x + "_axl.h"]»
+		«val sources = modelInfo.cppFiles.filter[x | x.endsWith(".cc")] + modelInfo.axlFiles.map[x | x + "_axl.h"]»
 		«IF !sources.empty»
 			add_library(«packageFullyQualifiedName.shortName»«FOR f : sources»«'\n'»  «f»«ENDFOR»«'\n'»)
 
-			«FOR axlFile : cMakeFiles.axlFilesForCMake AFTER "\n"»
+			«FOR axlFile : modelInfo.axlFiles AFTER "\n"»
 				arcane_generate_axl(«axlFile»)
 			«ENDFOR»
-			target_link_libraries(«packageFullyQualifiedName.shortName» PRIVATE arcane_full)
+			target_link_libraries(«packageFullyQualifiedName.shortName» PRIVATE arcane_full PUBLIC pybind11::embed scihooklib)
 			target_include_directories(«packageFullyQualifiedName.shortName» PUBLIC ${CMAKE_SOURCE_DIR} ${CMAKE_BINARY_DIR})
 		«ENDIF»
+
+		«/* TODO: Add scihook- and pybind11-specific content. */»
 
 		«FOR subPackageShortName : subPackageShortNames AFTER "\n"»
 			add_subdirectory(«subPackageShortName»)
@@ -56,13 +58,20 @@ class CMakeListsGenerator
 		#
 		# Generated file - Do not overwrite
 		#
-		cmake_minimum_required(VERSION 3.13 FATAL_ERROR)
-		project(«projectName»Core LANGUAGES NONE)
-
-		include(«arcaneHome»/samples/ArcaneCompilerConfig.cmake)
-
+		cmake_minimum_required(VERSION 3.13)
 		project(«projectName» LANGUAGES C CXX)
+
+		set(Arcane_ROOT «arcaneHome»)
+		include(«arcaneHome»/samples/ArcaneCompilerConfig.cmake)
 		find_package(Arcane REQUIRED)
+
+		set(PYBIND11_PYTHON_VERSION 3.8)
+		find_package(Python COMPONENTS Interpreter Development REQUIRED)
+		set(pybind11_DIR "${Python_SITELIB}/pybind11/share/cmake/pybind11")
+		find_package(pybind11 REQUIRED)
+		include_directories(${pybind11_INCLUDE_DIRS} ${Python_SITELIB}/scihook/include)
+		add_library(scihooklib SHARED IMPORTED)
+		set_property(TARGET scihooklib PROPERTY IMPORTED_LOCATION ${Python_SITELIB}/scihook/libscihook.so)
 
 		«FOR subPackageShortName : subPackageShortNames»
 		add_subdirectory(«subPackageShortName»)

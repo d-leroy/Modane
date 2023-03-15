@@ -9,6 +9,8 @@
  *******************************************************************************/
 package fr.cea.modane.uml
 
+import fr.cea.modane.modane.Comment
+import fr.cea.modane.modane.ModaneFactory
 import org.eclipse.uml2.uml.Element
 import org.eclipse.uml2.uml.Stereotype
 
@@ -16,14 +18,19 @@ import static extension fr.cea.modane.ModaneStringExtensions.*
 
 class ElementExtensions 
 {
-	static def getDescription(Element it)
+	static def Comment getDescription(Element it)
 	{
 		var s = new String
 		for (c : ownedComments)
-			if (c.body !== null) 
+		{
+			if (c.body !== null)
+			{
 				s = s.concat(c.body)
+			}
+		}
+		val text = s
 		if (s.empty) null
-		else s
+		else ModaneFactory::eINSTANCE.createComment => [comment = text]
 	}
 	
 	static def isUserEnabled(Element it, Stereotype st) { getValue(st, "userEnabled") as Boolean }

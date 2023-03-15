@@ -35,7 +35,7 @@
             id="fr.cea.modane.modane.presentation.ModaneEditorID"
             name="%_UI_ModaneEditor_label"
             icon="icons/full/obj16/ModaneModelFile.gif"
-            extensions="modane"
+            extensions="m"
             class="fr.cea.modane.modane.presentation.ModaneEditor"
             contributorClass="fr.cea.modane.modane.presentation.ModaneActionBarContributor">
       </editor>

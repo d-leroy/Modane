@@ -9,20 +9,21 @@
  *******************************************************************************/
 package fr.cea.modane.generator.cpp
 
+import fr.cea.modane.generator.cmake.ModelInfo
 import fr.cea.modane.modane.Enumeration
-import java.util.Collection
 import org.eclipse.xtext.generator.IFileSystemAccess
 
 import static extension fr.cea.modane.ModaneElementExtensions.*
+import static extension fr.cea.modane.ModaneStringExtensions.*
 import static extension fr.cea.modane.generator.cpp.ReferenceableExtensions.*
 
 class EnumerationExtensions
 {
-	static def compile(Enumeration it, IFileSystemAccess fsa, Collection<String> cmakeFiles)
+	static def compile(Enumeration it, IFileSystemAccess fsa, ModelInfo modelInfo)
 	{
 		val context = GenerationContext::Current
 		context.newFile(outputPath, referencedFileName, false, false)
-		cmakeFiles += referencedFileName
+		modelInfo.cppFiles += referencedFileName
 		context.addContent(content)
 		context.generate(fsa)
 	}
@@ -31,12 +32,14 @@ class EnumerationExtensions
 	'''
 		/*!
 		 * \brief Classe représentant l'énumération «name»
-		 * «description»
+		 «FOR l : fromDescription»
+		 * «l»
+		 «ENDFOR»
 		 */
 		enum class «name»
 		{
 		  «FOR l : literals SEPARATOR ','»
-		  «l.name.toFirstUpper»«IF !l.value.nullOrEmpty» = «l.value»«ENDIF»
+		  «l.name.toFirstUpper»«IF l.valueProvided» = «l.value»«ENDIF»
 		  «ENDFOR»
 		};
 	'''

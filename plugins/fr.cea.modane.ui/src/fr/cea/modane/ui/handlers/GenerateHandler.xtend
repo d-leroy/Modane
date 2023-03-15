@@ -109,7 +109,8 @@ class GenerateHandler extends AbstractHandler
 					else
 						packageToGenerate = options.packageToGenerate
 
-					umlToCpp.generate(m, options.outputDir, options.packagePrefix, packageToGenerate, options.writeCmakeFiles, options.writeModaneFiles)
+					umlToCpp.generate(m, options.outputDir, options.packagePrefix, packageToGenerate, options.profAccInstrumentation,
+							options.sciHookInstrumentation, options.writeCmakeFiles, options.writeCmakeFiles, options.writeModaneFiles)
 					consoleFactory.printConsole(MessageType.End, "Generation process ended successfully for: " + modelFile.name)
 					ModaneUiUtils::refreshResourceDir(modelFile, options.outputDir)
 				}

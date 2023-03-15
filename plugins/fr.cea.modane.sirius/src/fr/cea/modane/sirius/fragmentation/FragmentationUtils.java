@@ -21,7 +21,7 @@ import fr.cea.modane.sirius.Activator;
 
 public class FragmentationUtils 
 {
-	private static final String MODANE_FILE_EXTENSION = "modane";
+	private static final String MODANE_FILE_EXTENSION = fr.cea.modane.Utils.FileExtension.substring(1);
 	private static final String AIRD_FILE_EXTENSION = "aird";
 
 	public static boolean isControlled(EObject object) 

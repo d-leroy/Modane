@@ -39,7 +39,7 @@ class CyclesSearchResultContentProvider extends ArrayContentProvider implements 
 					
 					// Cycle : à partir du cycle, il faut construire une liste de segments.
 					// On va représenter un segment par une Pair<String, String>.
-					String case parentElement.size > 1 : 
+					String case parentElement.size > 1 :
 					{
 						val segments = new LinkedList<EdgeResultInfo>
 						for (i : 1..<parentElement.size)

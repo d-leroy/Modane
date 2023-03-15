@@ -29,7 +29,7 @@ class EObjectExtensions
 		eGet(baseClass) as Class
 	}
 	
-	static def PrimitiveType toUmlPrimitiveType(EObject it) 
+	static def PrimitiveType toUmlPrimitiveType(EObject it)
 	{
 		val baseClass = eClass.getEStructuralFeature("base_DataType")
 		eGet(baseClass) as PrimitiveType

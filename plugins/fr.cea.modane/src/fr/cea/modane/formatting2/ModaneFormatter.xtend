@@ -3,6 +3,7 @@
  */
 package fr.cea.modane.formatting2
 
+import fr.cea.modane.modane.Comment
 import fr.cea.modane.modane.Legacy
 import fr.cea.modane.modane.ModaneElement
 import fr.cea.modane.modane.ModaneModel
@@ -11,10 +12,10 @@ import org.eclipse.xtext.formatting2.AbstractFormatter2
 import org.eclipse.xtext.formatting2.IFormattableDocument
 
 class ModaneFormatter extends AbstractFormatter2 
-{	
+{
 	def dispatch void format(ModaneModel elt, extension IFormattableDocument document) 
 	{
-		elt.allRegionsFor.keywords(';').forEach[x|x.surround[noSpace]]	
+		elt.allRegionsFor.keywords(';').forEach[x|x.surround[noSpace]]
 		elt.allRegionsFor.keywords('[').forEach[x|x.append[noSpace]]
 		elt.allRegionsFor.keywords(']').forEach[x|x.prepend[noSpace] x.append[setNewLines(1)]]
 		elt.elements.forEach[format]
@@ -23,18 +24,27 @@ class ModaneFormatter extends AbstractFormatter2
 	def dispatch void format(ModaneElement elt, extension IFormattableDocument document) 
 	{
 		elt.prepend[setNewLines(2)]
-		
+
 		if (! (elt instanceof Variable || elt instanceof Legacy))
 		{
-			elt.allRegionsFor.keywords(';').forEach[x|x.append[setNewLines(1)]]	
-			elt.allRegionsFor.keywords('(').forEach[x|x.append[noSpace]]	
-			elt.allRegionsFor.keywords(')').forEach[x|x.prepend[noSpace]]	
-			elt.allRegionsFor.keywords(',').forEach[x|x.prepend[noSpace]]	
-			
+			elt.allRegionsFor.keywords(';').forEach[x|x.append[setNewLines(1)]]
+			elt.allRegionsFor.keywords('(').forEach[x|x.append[noSpace]]
+			elt.allRegionsFor.keywords(')').forEach[x|x.prepend[noSpace]]
+			elt.allRegionsFor.keywords(',').forEach[x|x.prepend[noSpace]]
+
 			val open = elt.regionFor.keyword('{')
 			val close = elt.regionFor.keyword('}')
 			open.surround[setNewLines(1)]
-			interior(open,close)[indent]	
+			interior(open,close)[indent]
 		}
+
+		elt.eContents.forEach[format]
+	}
+
+	def dispatch void format(Comment elt, extension IFormattableDocument document) 
+	{
+		elt.append[newLine]
+		val eObjectRegion = regionForEObject(elt)
+		addReplacer(new DoxCommentReplacer(eObjectRegion))
 	}
 }

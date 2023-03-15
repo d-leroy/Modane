@@ -5,6 +5,7 @@ package fr.cea.modane
 
 import org.eclipse.xtext.generator.IOutputConfigurationProvider
 import org.eclipse.xtext.naming.IQualifiedNameProvider
+import org.eclipse.xtext.conversion.IValueConverterService
 
 /**
  * Use this class to register components to be used at runtime / without the Equinox extension registry.
@@ -21,4 +22,8 @@ class ModaneRuntimeModule extends AbstractModaneRuntimeModule
 		typeof(ModaneQualifiedNameProvider)
 	}
 	
+	override Class<? extends IValueConverterService> bindIValueConverterService()
+	{
+		typeof(ModaneValueConverterService)
+	}
 }

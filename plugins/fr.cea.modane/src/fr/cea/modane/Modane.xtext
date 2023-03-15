@@ -14,8 +14,8 @@ generate modane "http://www.cea.fr/modane/Modane"
 // ----------------------------------------------------------------------------------------------------------------- //
 
 ModaneModel:
-	description=STRING?
-	'model' name=QualifiedName ';'
+	description=Comment?
+	'Model' name=QualifiedName ';'
 	elements += ModaneElement*;
 
 NamedElement:
@@ -30,126 +30,127 @@ ModaneElement:
 QualifiedName:
 	ID ('.' ID)*;
 
-// Le SimpleName n'est utile que pour voir apparaitre certains noms en gras dans l'éditeur.
-// C'est la raison pour laquelle certains noms restent avec la règle 'name=ID'.	
-SimpleName:
-	ID;
-
 // ----------------------------------------------------------------------------------------------------------------- //
 
 Variable:
-	description=STRING?
-	('[' dump?='dump'? restore?='rest'? executionDepend?='execdep'? needSync?='sync'? ']')? 
-	'Variable' support=ItemType multiplicity=VariableMultiplicity? type=SimpleType name=SimpleName ('family' family=[ItemFamily|QualifiedName])? ';';
+	description=Comment?
+	'var' type=SimpleType (multiplicity=VariableMultiplicity)? name=ID '{' (supports+=Item (',' supports+=Item)?)? '}'
+	dump?=DUMP? restore?=RESTORE? executionDepend?=EXEC_DEP? needSync?=SYNC?
+	('family' family=[ItemFamily|QualifiedName])? ';';
 
 // ----------------------------------------------------------------------------------------------------------------- //
 
 Enumeration:
-	description=STRING?
-	'Enumeration' name=SimpleName '{' literals+=EnumerationLiteral* '}';
+	description=Comment?
+	'enum' name=ID '{' literals+=EnumerationLiteral* '}';
 
 EnumerationLiteral:
-	description=STRING?
-	('[' ('namefr' '=' namefr=STRING)? ('categories' '=' '(' categories+=[UserCategory|QualifiedName]* (',' categories+=[UserCategory|QualifiedName])* ')')? ']')? 
-	name=SimpleName ('=' value=STRING)?';';
+	description=Comment?
+	('namefr' namefr=STRING)? ('categories' categories+=[UserCategory|QualifiedName] (',' categories+=[UserCategory|QualifiedName])* )?
+	name=ID (valueProvided?='=' value=INT)?';';
 
 // ----------------------------------------------------------------------------------------------------------------- //
 
 Legacy:
-	description=STRING?
-	'Legacy' name=SimpleName 'file' originFile=STRING ('namespace' originNamespace=STRING)? ';';
+	description=Comment?
+	'legacy' name=ID 'file' originFile=STRING ('namespace' originNamespace=STRING)?;
 
 // ----------------------------------------------------------------------------------------------------------------- //
 
 Struct:
-	description=STRING?
-	'Struct' name=SimpleName ('extends' parents+=[Struct|QualifiedName] (',' parents+=[Struct|QualifiedName])* )?
+	description=Comment?
+	'struct' name=ID ('extends' parents+=[Struct|QualifiedName] (',' parents+=[Struct|QualifiedName])* )?
 	'{' 
 		properties+=Pty* 
 	'}';
-	
+
 Pty:
-	description=STRING?
-	('[' ('namefr' '=' namefr=STRING)? ('categories' '=' '(' categories+=[UserCategory|QualifiedName]* (',' categories+=[UserCategory|QualifiedName])* ')')? ']')? 
-	multiplicity=PtyMultiplicity type=PtyOrArgType name=SimpleName ('=' defaultValue=STRING)? ';';
+	description=Comment?
+	multiplicity=PtyMultiplicity type=PtyOrArgType name=ID ('=' defaultValue=STRING)?
+	('namefr' namefr=STRING)? ('categories' categories+=[UserCategory|QualifiedName] (',' categories+=[UserCategory|QualifiedName])* )? ';';
 
 PtyOrArgType:
 	Simple | Item | ItemGroup | Reference;
-	
+
 // ----------------------------------------------------------------------------------------------------------------- //
 
 Interface:
-	description=STRING?
-	'Interface' name=SimpleName ('extends' parents+=[Interface|QualifiedName] (',' parents+=[Interface|QualifiedName])* )?
+	description=Comment?
+	'interface' name=ID ('extends' parents+=[Interface|QualifiedName] (',' parents+=[Interface|QualifiedName])* )?
 	'{'
 		properties+=Pty*
 		functions+=Function*
 	'}';
 
 Function:
-	description=STRING?
-	('[' const?='const'? ']')? 
-	((multiplicity=ArgMultiplicity? type=PtyOrArgType)?|'void')  name=SimpleName 
-	'(' (args+=Arg (',' args+=Arg)*)? ')' 
-	 ('on' support=FunctionItemType sequential?='sequentially'? )?  
-	 ('use' '(' vars+=VarReference (',' vars+=VarReference)* ')')?
-	 ('call' '(' calls+=[Function|QualifiedName] (',' calls+=[Function|QualifiedName])* ')')? ';';
+	description=Comment?
+	'def' const?='const'?
+	('void'|(type=PtyOrArgType (multiple?='*')?))  name=ID
+	'(' (args+=Arg (',' args+=Arg)*)? ')'
+	 ('on' support=FunctionItem sequential?='sequentially'? )?
+	 ('in' inVars+=VarReference (',' inVars+=VarReference)*)?
+	 ('out' outVars+=VarReference (',' outVars+=VarReference)*)?
+	 ('inout' inOutVars+=VarReference (',' inOutVars+=VarReference)*)?
+	 ('call' calls+=[Function|QualifiedName] (',' calls+=[Function|QualifiedName])* )? ';';
 
 Arg:
-	ArgDefinition | VarDefinition;	
+	ArgDefinition | VarDefinition;
 
 ArgDefinition:
-	direction=Direction multiplicity=ArgMultiplicity? type=PtyOrArgType name=ID ('=' defaultValue=STRING)?;
+	direction=Direction type=PtyOrArgType (multiple?='*')? name=ID ('=' defaultValue=STRING)?;
 
 VarDefinition:
-	direction=Direction support=ItemType multiplicity=VariableMultiplicity? type=SimpleType name=ID;
+	direction=Direction type=SimpleType (multiplicity=VariableMultiplicity)? name=ID '{' (supports+=Item (',' supports+=Item)?)? '}';
 
 VarReference:
-	direction=Direction variable=[Variable|QualifiedName];
+	variable=[Variable|QualifiedName];
 
 // ----------------------------------------------------------------------------------------------------------------- //
 
 ItemFamily:
-	description=STRING?
-	'ItemFamily' name=SimpleName 
+	description=Comment?
+	'ItemFamily' name=ID
 	'on' support=ItemType ';';
 
 // ----------------------------------------------------------------------------------------------------------------- //
 
 ServiceOrModule:
 	Service | Module;
-	
+
 Service:
-	description=STRING?
-	('[' type=ServiceType? singleton?='singleton'? ('namefr' '=' namefr=STRING)? ('categories' '=' '(' categories+=[UserCategory|QualifiedName]* (',' categories+=[UserCategory|QualifiedName])* ')')? classSetUp?='class-set-up'? testSetUp?='test-set-up'? classTearDown?='class-tear-down'? testTearDown?='test-tear-down'? ']')? 
-	'Service' name=SimpleName 
+	description=Comment?
+	'service' type=ServiceType singleton?='singleton'? name=ID
 	'implements' interfaces+=[Interface|QualifiedName] (',' interfaces+=[Interface|QualifiedName])*
+	('namefr' namefr=STRING)? ('categories' categories+=[UserCategory|QualifiedName] (',' categories+=[UserCategory|QualifiedName])* )?
+	classSetUp?='class-set-up'? testSetUp?='test-set-up'? classTearDown?='class-tear-down'? testTearDown?='test-tear-down'?
 	'{'
 		properties+=Pty*
 		overrideFuncs+=OverrideFunction*
 		functions+=Function*
 		unitTestFunctions+=UnitTestFunction*
 	'}';
-	
+
 OverrideFunction:
-	description=STRING?
-	'override' func=[Function|QualifiedName] 
-	 ('use' '(' vars+=VarReference (',' vars+=VarReference)* ')')?
-	 ('call' '(' calls+=[Function|QualifiedName] (',' calls+=[Function|QualifiedName])* ')')? ';';
+	description=Comment?
+	'override' func=[Function|QualifiedName]
+	 ('in' inVars+=VarReference (',' inVars+=VarReference)*)?
+	 ('out' outVars+=VarReference (',' outVars+=VarReference)*)?
+	 ('inout' inOutVars+=VarReference (',' inOutVars+=VarReference)*)?
+	 ('call' calls+=[Function|QualifiedName] (',' calls+=[Function|QualifiedName])* )? ';';
 
 UnitTestFunction:
-	description=STRING?
-	'test' name=SimpleName 'label' label=STRING ';';
-	
+	description=Comment?
+	'test' name=ID 'label' label=STRING ';';
+
 enum ServiceType:
 	caseoption | application | session | subdomain;
 
 // ----------------------------------------------------------------------------------------------------------------- //
 
 Module:
-	description=STRING?
-	('[' ('namefr' '=' namefr=STRING)? ('categories' '=' '(' categories+=[UserCategory|QualifiedName]* (',' categories+=[UserCategory|QualifiedName])* ')')? ']')? 
-	'Module' name=SimpleName ('implements' interfaces+=[Interface|QualifiedName] (',' interfaces+=[Interface|QualifiedName])* )?
+	description=Comment?
+	'module' name=ID ('implements' interfaces+=[Interface|QualifiedName] (',' interfaces+=[Interface|QualifiedName])*)?
+	('namefr' namefr=STRING)? ('categories' categories+=[UserCategory|QualifiedName] (',' categories+=[UserCategory|QualifiedName])* )?
 	'{'
 		properties+=Pty*
 		overrideFuncs+=OverrideFunction*
@@ -158,60 +159,90 @@ Module:
 	'}';
 
 EntryPoint:
-	description=STRING?
+	description=Comment?
 	('[' autoLoad=EntryPointAutoLoad ']')? 
-	'@' location=EntryPointLocation name=SimpleName  
-	('on' support=FunctionItemType sequential?='sequentially'? )? 
-	('use' '(' vars+=VarReference (',' vars+=VarReference)* ')')?
-	('call' '(' calls+=[Function|QualifiedName] (',' calls+=[Function|QualifiedName])* ')')? ';';
+	'@' location=EntryPointLocation name=ID  
+	('on' support=FunctionItem sequential?='sequentially'? )?
+	('in' inVars+=VarReference (',' inVars+=VarReference)*)?
+	('out' outVars+=VarReference (',' outVars+=VarReference)*)?
+	('inout' inOutVars+=VarReference (',' inOutVars+=VarReference)*)?
+	('call' calls+=[Function|QualifiedName] (',' calls+=[Function|QualifiedName])* )? ';';
 
 enum EntryPointLocation:
 	ComputeLoop | OnMeshChanged | OnMeshRefinement | Init | ContinueInit | StartInit | Restore | Build | Exit;
-	
+
 enum EntryPointAutoLoad:
-	NoAutoLoad | AutoLoadBegin | AutoLoadEnd;	
-	
+	NoAutoLoad | AutoLoadBegin | AutoLoadEnd;
+
 UserCategory:
-	description=STRING?
-	'UserCategory' name=SimpleName ';';
+	description=Comment?
+	'UserCategory' name=ID ';';
+
+Comment:
+	comment=DOX_COMMENT;
 
 // ----------------------------------------------------------------------------------------------------------------- //
 
 Simple:
 	type=SimpleType;
-	
+
 Item:
 	type=ItemType;
-	
+
+FunctionItem:
+	type=FunctionItemType;
+
 ItemGroup:
 	type=ItemGroupType;
+
+VariableMultiplicity:
+	type=VariableMultiplicityType;
 
 Reference:
 	target=[Referenceable|QualifiedName];
 
+enum SimpleType: 
+	bool='bool' | String='string'| Integer='integer' | Int32='int32' | Int64='int64' | Real='real' |
+	Real2='real[2]' | Real2x2='real[2,2]' | Real3='real[3]' | Real3x3='real[3,3]';
+
 enum ItemType:
-	NoItem | Item | Cell | Node | Face | Particle | MatCell | EnvCell | ComponentCell | AllEnvCell | DoF;
+	Item='item' | Cell='cell' | Node='node' | Face='face' | Particle='particle' | MatCell='matCell' | EnvCell='envCell' | ComponentCell='componentCell' |
+	AllEnvCell='allEnvCell' | DoF='DoF';
 
 enum FunctionItemType:
-	NoItem | Item | Cell | Node | Face | Particle | MatCell | EnvCell | ComponentCell | AllEnvCell | DoF | ItemTypeSpecialized;
-	
-enum ItemGroupType:
-	NoItemGroup | ItemGroup | CellGroup | NodeGroup | FaceGroup | ParticleGroup | MatCellGroup | EnvCellGroup | ComponentCellGroup | AllEnvCellGroup; 
+	Item='item' | Cell='cell' | Node='node' | Face='face' | Particle='particle' | MatCell='matCell' | EnvCell='envCell' | ComponentCell='componentCell' |
+	AllEnvCell='allEnvCell' | DoF='DoF' | ItemTypeSpecialized='itemTypeSpecialized';
 
-enum SimpleType: 
-	bool | String| Integer | Int32 | Int64 | Real | Real2 | Real3 | Real2x2 | Real3x3;
+enum ItemGroupType:
+	NoItemGroup='noItemGroup' | ItemGroup='itemGroup' | CellGroup='cellGroup' | NodeGroup='nodeGroup' | FaceGroup='faceGroup' | ParticleGroup='particleGroup' |
+	MatCellGroup='matCellGroup' | EnvCellGroup='envCellGroup' | ComponentCellGroup='componentCellGroup' | AllEnvCellGroup='allEnvCellGroup';
 
 enum Direction:
 	in | out | inout;
 
 enum PtyMultiplicity:
 	ZeroOne='[0..1]' | OneOne='[1..1]' | ZeroStar='[0..*]' | OneStar='[1..*]';
-	
-enum VariableMultiplicity:
-	Scalar='[1]' | Array='[*]' | Array2='[*,*]';
 
-enum ArgMultiplicity:
-	Scalar='[1]' | Array='[*]';
-	
+enum VariableMultiplicityType:
+	array | array2;
+
+terminal DUMP:
+	'@dump';
+
+terminal RESTORE:
+	'@rest';
+
+terminal EXEC_DEP:
+	'@execDep';
+
+terminal SYNC:
+	'@sync';
+
 // ----------------------------------------------------------------------------------------------------------------- //
 
+@Override
+terminal ML_COMMENT : '/*'(!'!') -> '*/';
+
+terminal DOX_COMMENT : '/*!' -> '*/';
+
+// ----------------------------------------------------------------------------------------------------------------- //

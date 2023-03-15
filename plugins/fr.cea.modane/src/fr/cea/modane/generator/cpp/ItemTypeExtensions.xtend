@@ -30,4 +30,3 @@ class ItemTypeExtensions
 		it == FunctionItemType::ALL_ENV_CELL
 	}
 }
-

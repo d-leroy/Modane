@@ -13,6 +13,7 @@ import com.google.inject.Inject
 import fr.cea.modane.Utils
 import fr.cea.modane.generator.ModaneGeneratorMessageDispatcher
 import fr.cea.modane.generator.ModaneGeneratorMessageDispatcher.MessageType
+import fr.cea.modane.modane.Comment
 import java.io.StringReader
 import javax.xml.parsers.SAXParserFactory
 import org.xml.sax.InputSource
@@ -21,11 +22,11 @@ class DescriptionUtils
 {
 	@Inject ModaneGeneratorMessageDispatcher messageDispatcher
 
-	def formatDescription(String comment)
+	def String formatDescription(Comment comment)
 	{
-		if (!comment.isNullOrEmpty)
+		if (comment !== null && !comment.comment.isNullOrEmpty)
 		{
-			val c = comment
+			val c = comment.comment
 			if (c.validXml) '''<description>«c»</description>'''
 			else '''<description><![CDATA[«c»]]></description>'''
 		}

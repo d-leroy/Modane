@@ -10,12 +10,12 @@
 package fr.cea.modane.generator.axl
 
 import com.google.inject.Inject
+import fr.cea.modane.generator.cmake.ModelInfo
 import fr.cea.modane.modane.ModaneElement
 import fr.cea.modane.modane.Module
 import fr.cea.modane.modane.Service
 import java.io.StringReader
 import java.io.StringWriter
-import java.util.Collection
 import javax.xml.transform.OutputKeys
 import javax.xml.transform.TransformerFactory
 import javax.xml.transform.stream.StreamResult
@@ -31,12 +31,12 @@ class AxlGenerator
 	@Inject extension ModuleExtensions
 	@Inject extension ServiceExtensions
 
-	def generateFiles(ModaneElement elt, IFileSystemAccess fsa, Collection<String> cmakeFiles)
+	def generateFiles(ModaneElement elt, IFileSystemAccess fsa, ModelInfo modelInfo)
 	{
 		if (elt.fileContent !== null)
 		{
 			val fileName = elt.outputPath + '/' + elt.name + FileExtension
-			cmakeFiles += elt.name
+			modelInfo.axlFiles += elt.name
 			val content = elt.fileContent.toString.beautifyXml
 			fsa.generateFile(fileName, content)
 		}

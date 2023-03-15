@@ -33,7 +33,7 @@ public class PartialGenTestCase extends TestCaseBase
 
 		UmlToCpp umlToCpp = UmlToCpp.createInstance();
 		Model model = umlToCpp.readModel(getUmlModelFileURI(ModelName));
-		umlToCpp.generate(model, getAbsoluteSrcDir(ModelName), null, "level1.level2.level3", false, false);
+		umlToCpp.generate(model, getAbsoluteSrcDir(ModelName), null, "level1.level2.level3", false, false, false, false, false);
 
 		// il faut vérifier qu'il n'y a eu aucun fichier créé au niveau 1
 		for (File f : Level1Folder.listFiles())
@@ -55,7 +55,7 @@ public class PartialGenTestCase extends TestCaseBase
 
 		UmlToCpp umlToCpp = UmlToCpp.createInstance();
 		Model model = umlToCpp.readModel(getUmlModelFileURI(ModelName));
-		umlToCpp.generate(model, getAbsoluteSrcDir(ModelName), null, "level1", false, false);
+		umlToCpp.generate(model, getAbsoluteSrcDir(ModelName), null, "level1", false, false, false, false, false);
 
 		// il faut vérifier que le service est présent au niveau 1
 		String[] files = Level1Folder.list();

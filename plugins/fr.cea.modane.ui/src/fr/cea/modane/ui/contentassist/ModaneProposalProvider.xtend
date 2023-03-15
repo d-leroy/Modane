@@ -14,6 +14,7 @@ import fr.cea.modane.modane.OverrideFunction
 import fr.cea.modane.modane.Pty
 import fr.cea.modane.modane.Reference
 import fr.cea.modane.modane.Service
+import fr.cea.modane.modane.ServiceType
 import java.util.ArrayList
 import java.util.List
 import org.eclipse.emf.ecore.EObject
@@ -25,8 +26,8 @@ import org.eclipse.xtext.resource.IEObjectDescription
 import org.eclipse.xtext.ui.editor.contentassist.ContentAssistContext
 import org.eclipse.xtext.ui.editor.contentassist.ICompletionProposalAcceptor
 
-import static extension fr.cea.modane.ModaneModelExtensions.*
 import static extension fr.cea.modane.ModaneElementExtensions.*
+import static extension fr.cea.modane.ModaneModelExtensions.*
 
 /**
  * see http://www.eclipse.org/Xtext/documentation/latest/xtext.html#contentAssist on how to customize content assistant
@@ -51,7 +52,7 @@ class ModaneProposalProvider extends AbstractModaneProposalProvider
 	/** Filtrage des variables si la fonction est définie sur une interface */
 	override completeVarReference_Variable(EObject model, Assignment assignment, ContentAssistContext context, ICompletionProposalAcceptor acceptor)
 	{
-		// pas de proposition de complétion si c'esy une fonction d'interface (pas le droit au VarReference
+		// pas de proposition de complétion si c'est une fonction d'interface (pas le droit au VarReference)
 		if (!(model instanceof Function) || !(model.eContainer instanceof Interface))
 			super.completeVarReference_Variable(model, assignment, context, acceptor)
 	}
@@ -82,7 +83,19 @@ class ModaneProposalProvider extends AbstractModaneProposalProvider
 		val scope = scopeProvider.getScope(model, ModanePackage::eINSTANCE.modaneModel_Elements)
 		scope.modelNames.forEach[p | acceptor.accept(createCompletionProposal(p + '.', context))]
 	}
-	
+
+	// Tri des enums avec l'option la courante en premier
+	override completeService_Type(EObject model, Assignment assignment, ContentAssistContext context, ICompletionProposalAcceptor acceptor)
+	{
+		for (e : ServiceType.values)
+		{
+			var priority = priorityHelper.defaultPriority;
+			if (e.literal.equals("caseoption"))
+				priority = priorityHelper.defaultPriority * 2
+			acceptor.accept(createCompletionProposal(e.literal, null , null, priority, "", context))
+		}
+	}
+
 	private def dispatch List<Interface> getInterfaces(Module it) { interfaces }
 	private def dispatch List<Interface> getInterfaces(Service it) { interfaces }
 	private def dispatch List<Interface> getInterfaces(EObject it) { null }

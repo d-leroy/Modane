@@ -13,13 +13,13 @@ import com.google.inject.Inject
 import fr.cea.modane.generator.GenerationOptions
 import fr.cea.modane.generator.ModaneGeneratorMessageDispatcher
 import fr.cea.modane.generator.ModaneGeneratorMessageDispatcher.MessageType
+import fr.cea.modane.generator.cmake.ModelInfo
 import fr.cea.modane.modane.Enumeration
 import fr.cea.modane.modane.Interface
 import fr.cea.modane.modane.ModaneElement
 import fr.cea.modane.modane.Module
 import fr.cea.modane.modane.Service
 import fr.cea.modane.modane.Struct
-import java.util.Collection
 import org.eclipse.xtext.generator.IFileSystemAccess
 
 import static extension fr.cea.modane.generator.cpp.CppMethodContainerExtensions.*
@@ -36,16 +36,16 @@ class CppGenerator
 		new GenerationContext(options)
 	}
 
-	def generateFiles(ModaneElement elt, IFileSystemAccess fsa, Collection<String> cmakeFiles)
+	def generateFiles(ModaneElement elt, IFileSystemAccess fsa, boolean profAccInstrumentation, boolean sciHookInstrumentation, ModelInfo modelInfo)
 	{
 		dispatcher.post(MessageType.Exec, "    C++ generation for: " + elt.name )
 		switch elt
 		{
-			Module : new ModuleCppMethodContainer(elt).compile(fsa, cmakeFiles)
-			Service : new ServiceCppMethodContainer(elt).compile(fsa, cmakeFiles)
-			Struct : elt.compile(fsa, cmakeFiles)
-			Enumeration : elt.compile(fsa, cmakeFiles)
-			Interface : elt.compile(fsa, cmakeFiles)
+			Module : new ModuleCppMethodContainer(elt).compile(fsa, profAccInstrumentation, sciHookInstrumentation, modelInfo)
+			Service : new ServiceCppMethodContainer(elt).compile(fsa, profAccInstrumentation, sciHookInstrumentation, modelInfo)
+			Struct : elt.compile(fsa, modelInfo)
+			Enumeration : elt.compile(fsa, modelInfo)
+			Interface : elt.compile(fsa, profAccInstrumentation, sciHookInstrumentation, modelInfo)
 		}
 	}
 }

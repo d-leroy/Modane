@@ -11,8 +11,10 @@ package fr.cea.modane.uml
 
 import com.google.inject.Inject
 import fr.cea.modane.ModaneStandaloneSetupGenerated
+import fr.cea.modane.Utils
+import fr.cea.modane.generator.ModaneGeneratorMessageDispatcher
+import fr.cea.modane.generator.ModaneGeneratorMessageDispatcher.MessageType
 import fr.cea.modane.modane.ArgDefinition
-import fr.cea.modane.modane.ArgMultiplicity
 import fr.cea.modane.modane.Direction
 import fr.cea.modane.modane.EntryPoint
 import fr.cea.modane.modane.Enumeration
@@ -46,6 +48,7 @@ import org.eclipse.emf.ecore.util.EcoreUtil
 import org.eclipse.emf.ecore.xmi.XMLResource
 import org.eclipse.uml2.uml.Class
 import org.eclipse.uml2.uml.Model
+import org.eclipse.uml2.uml.NamedElement
 import org.eclipse.uml2.uml.Operation
 import org.eclipse.uml2.uml.Package
 import org.eclipse.uml2.uml.Parameter
@@ -62,12 +65,9 @@ import static extension fr.cea.modane.uml.ArcaneProfileExtensions.*
 import static extension fr.cea.modane.uml.EObjectExtensions.*
 import static extension fr.cea.modane.uml.ElementExtensions.*
 import static extension fr.cea.modane.uml.ModelMetricsExtensions.*
-import fr.cea.modane.generator.ModaneGeneratorMessageDispatcher
-import fr.cea.modane.generator.ModaneGeneratorMessageDispatcher.MessageType
 
 class UmlToModane
 {
-	val FileExtension = ".modane"
 	@Inject ResourceSet resourceSet
 	@Inject ModaneGeneratorMessageDispatcher dispatcher
 
@@ -94,7 +94,12 @@ class UmlToModane
 	def List<ModaneModel> createModaneModels(Model umlModel, String packagePrefix)
 	{
 		profile = umlModel.getAppliedProfile("ArcaneProfile")
-		defaultCategory = ModaneFactory::eINSTANCE.createUserCategory => [name = "User" description = "Default category"]
+		defaultCategory = ModaneFactory::eINSTANCE.createUserCategory => [
+			name = "User"
+			description = ModaneFactory::eINSTANCE.createComment => [
+				comment = "Default category"
+			]
+		]
 
 		pe = new PackageExtensions(packagePrefix)
 		ce = new ClassExtensions(profile)
@@ -128,13 +133,14 @@ class UmlToModane
 	def createModaneModelsResources(Model umlModel, String absoluteOuputPath, String packagePrefix, boolean writeFiles)
 	{
 		val models = createModaneModels(umlModel, packagePrefix)
-		models.forEach[x | x.addResource(absoluteOuputPath, FileExtension, resourceSet)]
+		models.forEach[x | x.addResource(absoluteOuputPath, Utils.FileExtension, resourceSet)]
 		EcoreUtil::resolveAll(resourceSet)
 
 		if (writeFiles)
 		{
 			for (r : resourceSet.resources)
 			{
+				r.allContents.filter(NamedElement).forEach[e|e.name = e.name.trim]
 				dispatcher.post(MessageType.Exec, 'Writing resource: ' + r.URI.toString)
 				r.save(saveOptions)
 			}
@@ -201,7 +207,7 @@ class UmlToModane
 		needSync = c.varNeedSync
 		restore = c.varRestore
 		multiplicity = c.varMult
-		support = c.varSupport
+		supports += c.varSupport
 		type = c.varType
 		family = c.varItemFamily?.toItemFamily
 	}
@@ -251,7 +257,7 @@ class UmlToModane
 	private def ArgDefinition create ModaneFactory::eINSTANCE.createArgDefinition toArgument(Parameter p)
 	{
 		name = p.name.separateWith('_')
-		if (p.upperBound == -1 ) multiplicity = ArgMultiplicity::ARRAY else multiplicity = ArgMultiplicity::SCALAR
+		multiple = (p.upperBound == -1 )
 		type = p.type.toArgType
 		if (p.defaultValue !== null) defaultValue = p.defaultValue.stringValue.replaceAll('::','.')
 		if (p.direction == ParameterDirectionKind::OUT_LITERAL) direction = Direction::OUT
@@ -269,7 +275,16 @@ class UmlToModane
 	private def EnumerationLiteral create ModaneFactory::eINSTANCE.createEnumerationLiteral toEnumerationLiteral(org.eclipse.uml2.uml.EnumerationLiteral l)
 	{
 		name = l.name
-		value = l.value
+		val stringValue = l.value
+		if (stringValue.nullOrEmpty)
+			valueProvided = false
+		else try
+		{
+			value = Integer.parseInt(stringValue)
+			valueProvided = true
+		} catch (NumberFormatException e) {
+			valueProvided = false
+		}
 		description = l.description
 		namefr = l.getNameFr(profile.enumLiteralSt)
 		if (l.isUserEnabled(profile.enumLiteralSt)) categories += defaultCategory
@@ -329,8 +344,18 @@ class UmlToModane
 	{
 		description = o.description
 		func = interfaceFunc
-		for (v : o.funcInNotOutVars) vars += v.toUmlClass.toVariable.toVarReference(true, false)
-		for (v : o.funcOutVars) vars += v.toUmlClass.toVariable.toVarReference(o.funcInVars.contains(v), true)
+		for (v : o.funcInNotOutVars) inVars += v.toUmlClass.toVariable.toVarReference
+		for (v : o.funcOutVars)
+		{
+			if (o.funcInVars.contains(v))
+			{
+				inOutVars += v.toUmlClass.toVariable.toVarReference
+			}
+			else
+			{
+				outVars += v.toUmlClass.toVariable.toVarReference
+			}
+		}
 	}
 
 	private def EntryPoint create ModaneFactory::eINSTANCE.createEntryPoint toEntryPoint(Operation o)
@@ -339,8 +364,18 @@ class UmlToModane
 		description = o.description
 		location = o.epLocation
 		autoLoad = o.epAutoLoad
-		for (v : o.epInNotOutVars) vars += v.toUmlClass.toVariable.toVarReference(true, false)
-		for (v : o.epOutVars) vars += v.toUmlClass.toVariable.toVarReference(o.epInVars.contains(v), true)
+		for (v : o.epInNotOutVars) inVars += v.toUmlClass.toVariable.toVarReference
+		for (v : o.epOutVars)
+		{
+			if (o.epInVars.contains(v))
+			{
+				inOutVars += v.toUmlClass.toVariable.toVarReference
+			}
+			else
+			{
+				outVars += v.toUmlClass.toVariable.toVarReference
+			}
+		}
 		for (cf : o.epCalledFuncs) calls += cf.toOperation.toFunction
 	}
 
@@ -355,14 +390,24 @@ class UmlToModane
 		{
 			val c = v.toUmlClass
 			if (c.abstract) args += c.toVarDefinition(true, false)
-			else vars += c.toVariable.toVarReference(true, false)
+			else inVars += c.toVariable.toVarReference
 		}
 		for (v : o.funcOutVars)
 		{
 			val c = v.toUmlClass
 			val isIn = o.funcInVars.contains(v)
 			if (c.abstract) args += c.toVarDefinition(isIn, true)
-			else vars += c.toVariable.toVarReference(isIn, true)
+			else
+			{
+				if (isIn)
+				{
+					inOutVars += c.toVariable.toVarReference
+				}
+				else
+				{
+					outVars += c.toVariable.toVarReference
+				}
+			}
 		}
 		for ( p : o.inOutParameters) args += p.toArgument
 		for (cf : o.funcCalledFuncs) calls += cf.toOperation.toFunction
@@ -371,10 +416,7 @@ class UmlToModane
 		if (o.hasReturnParameter)
 		{
 			type = o.returnParameter.type.toArgType
-			if (o.returnParameter.upperBound == -1)
-				multiplicity = ArgMultiplicity::ARRAY
-			else
-				multiplicity = ArgMultiplicity::SCALAR
+			multiple = (o.returnParameter.upperBound == -1)
 		}
 	}
 
@@ -383,7 +425,7 @@ class UmlToModane
 		val it = ModaneFactory::eINSTANCE.createVarDefinition
 		name = c.name.separateWith('_')
 		multiplicity = c.varMult
-		support = c.varSupport
+		supports += c.varSupport
 		type = c.varType
 		if (isIn && isOut) direction = Direction::INOUT
 		else if (isOut) direction = Direction::OUT
@@ -391,14 +433,21 @@ class UmlToModane
 		return it
 	}
 
-	private def VarReference toVarReference(Variable v, boolean isIn, boolean isOut)
+//	private def VarReference toVarReference(Variable v, boolean isIn, boolean isOut)
+//	{
+//		val it = ModaneFactory::eINSTANCE.createVarReference
+//		if (isIn && isOut) direction = Direction::INOUT
+//		else if (isOut) direction = Direction::OUT
+//		else direction = Direction::IN
+//		variable = v
+//		return it
+//	}
+
+	private def VarReference toVarReference(Variable v)
 	{
-		val it = ModaneFactory::eINSTANCE.createVarReference
-		if (isIn && isOut) direction = Direction::INOUT
-		else if (isOut) direction = Direction::OUT
-		else direction = Direction::IN
-		variable = v
-		return it
+		ModaneFactory::eINSTANCE.createVarReference => [
+			variable = v
+		]
 	}
 
 	private def PtyOrArgType toArgType(Type type)
@@ -422,15 +471,23 @@ class UmlToModane
 	private def PtyOrArgType toArgType(PrimitiveType type)
 	{
 		if (type.name == 'Boolean')
+		{
 			ModaneFactory::eINSTANCE.createSimple => [type = SimpleType::BOOL]
+		}
 		else if (SimpleType::getByName(type.name) === null)
 		{
 			if (type.name.endsWith('Group'))
+			{
 				ModaneFactory::eINSTANCE.createItemGroup => [type = ItemGroupType::getByName(type.name)]
+			}
 			else
+			{
 				ModaneFactory::eINSTANCE.createItem => [type = ItemType::getByName(type.name)]
+			}
 		}
 		else
+		{
 			ModaneFactory::eINSTANCE.createSimple => [type = SimpleType::getByName(type.name)]
+		}
 	}
 }

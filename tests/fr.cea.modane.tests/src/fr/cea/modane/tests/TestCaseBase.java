@@ -100,7 +100,7 @@ public abstract class TestCaseBase
 		UmlToCpp umlToCpp = UmlToCpp.createInstance();
 		umlToCpp.getMessageDispatcher().getTraceListeners().add(printConsole);
 		Model model = umlToCpp.readModel(getUmlModelFileURI(testName));
-		umlToCpp.generate(model, getAbsoluteSrcDir(testName), null, null, false, false);
+		umlToCpp.generate(model, getAbsoluteSrcDir(testName), null, null, false, false, false, false, false);
 		umlToCpp.getMessageDispatcher().getTraceListeners().remove(printConsole);
 		System.out.println("End of generation from UML model for test " + testName + "\n");
 	}

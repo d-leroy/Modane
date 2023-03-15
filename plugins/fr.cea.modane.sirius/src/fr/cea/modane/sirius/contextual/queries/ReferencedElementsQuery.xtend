@@ -36,9 +36,9 @@ class ReferencedElementsQuery implements IQuery
 			// On a choisi de ne pas remonter les dépendances provenant des OverrideFunctions sur les Services et des EntryPoints sur les Modules
 			ServiceOrModule: (interfaces + properties.ptyReferenceables).toObjectList
 			Pty case (type instanceof Reference):  #[(type as Reference).target]
-			Function: (calls + vars.variables + args.filter(ArgDefinition).argReferenceables).toObjectList
-			OverrideFunction: (calls + vars.variables + #[func]).toObjectList
-			EntryPoint: (calls + vars.variables).toObjectList
+			Function: (calls + inVars.variables + outVars.variables + inOutVars.variables + args.filter(ArgDefinition).argReferenceables).toObjectList
+			OverrideFunction: (calls + inVars.variables + outVars.variables + inOutVars.variables + #[func]).toObjectList
+			EntryPoint: (calls + inVars.variables + outVars.variables + inOutVars.variables).toObjectList
 			default : #[]
 		}
 	}

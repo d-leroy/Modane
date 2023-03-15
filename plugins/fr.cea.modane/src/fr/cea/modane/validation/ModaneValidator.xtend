@@ -18,7 +18,6 @@ import fr.cea.modane.modane.EntryPoint
 import fr.cea.modane.modane.Enumeration
 import fr.cea.modane.modane.EnumerationLiteral
 import fr.cea.modane.modane.Function
-import fr.cea.modane.modane.FunctionItemType
 import fr.cea.modane.modane.Interface
 import fr.cea.modane.modane.Item
 import fr.cea.modane.modane.ItemGroup
@@ -41,13 +40,14 @@ import fr.cea.modane.modane.UnitTestFunction
 import fr.cea.modane.modane.VarDefinition
 import fr.cea.modane.modane.VarReference
 import fr.cea.modane.modane.Variable
-import fr.cea.modane.modane.VariableMultiplicity
+import fr.cea.modane.modane.VariableMultiplicityType
 import java.util.ArrayList
 import org.eclipse.emf.ecore.EReference
 import org.eclipse.emf.ecore.EStructuralFeature
 import org.eclipse.xtext.scoping.IScopeProvider
 import org.eclipse.xtext.validation.Check
 
+import static extension fr.cea.modane.FunctionExtensions.*
 import static extension fr.cea.modane.InterfaceExtensions.*
 import static extension fr.cea.modane.ModaneElementExtensions.*
 import static extension fr.cea.modane.ModaneStringExtensions.*
@@ -203,7 +203,7 @@ class ModaneValidator extends UniqueNameValidator
 	@Check
 	def checkSupportFunctionReturnVoid(Function it)
 	{
-		if (type !== null && support != FunctionItemType::NO_ITEM)
+		if (type !== null && support !== null)
 		{
 			error(SUPPORT_FUNCTION_RETURN_VOID, ModanePackage.Literals::FUNCTION__TYPE, RETURN_VOID)
 			return false
@@ -216,7 +216,7 @@ class ModaneValidator extends UniqueNameValidator
 	{
 		if (eContainer instanceof Interface && !vars.empty)
 		{
-			error(NO_VAR_ON_INTERFACE_FUNCTION, ModanePackage.Literals::FUNCTION__VARS)
+			error(NO_VAR_ON_INTERFACE_FUNCTION, ModanePackage.Literals::NAMED_ELEMENT__NAME)
 			return false
 		}
 		return true
@@ -410,7 +410,7 @@ class ModaneValidator extends UniqueNameValidator
 	@Check
 	def checkPtyOrArgTypeNotNoItem(Item it)
 	{
-		if (type == ItemType::NO_ITEM)
+		if (type === null)
 		{
 			error(PTYORARGTYPE_NOT_NOITEM, ModanePackage.Literals::ITEM__TYPE)
 			return false
@@ -440,7 +440,7 @@ class ModaneValidator extends UniqueNameValidator
 	@Check
 	def checkParticleVariableMustHaveFamily(Variable it)
 	{ 
-		if (support == ItemType::PARTICLE && family === null)
+		if (supports.contains(ItemType::PARTICLE) && family === null)
 		{
 			error(PARTICLE_VARIABLE_MUST_HAVE_FAMILY, ModanePackage.Literals.VARIABLE__FAMILY)
 			return false
@@ -451,7 +451,7 @@ class ModaneValidator extends UniqueNameValidator
 	@Check
 	def checkDoFVariableMustHaveFamily(Variable it)
 	{ 
-		if (support == ItemType::DO_F && family === null)
+		if (supports.contains(ItemType::DO_F) && family === null)
 		{
 			error(DOF_VARIABLE_MUST_HAVE_FAMILY, ModanePackage.Literals.VARIABLE__FAMILY)
 			return false
@@ -462,7 +462,7 @@ class ModaneValidator extends UniqueNameValidator
 	@Check
 	def checkSameSupportOnVariableAndFamily(Variable it)
 	{ 
-		if (family !== null && support !== family.support)
+		if (family !== null && !supports.contains(family.support))
 		{
 			error(SAME_SUPPORT_ON_VARIABLE_AND_FAMILY, ModanePackage.Literals.VARIABLE__FAMILY)
 			return false
@@ -473,7 +473,7 @@ class ModaneValidator extends UniqueNameValidator
 	@Check
 	def checkOnlyDoFOrParticleCanHaveFamily(Variable it)
 	{ 
-		if (support != ItemType::DO_F && support != ItemType::PARTICLE && family !== null)
+		if (!supports.contains(ItemType::DO_F) && !supports.contains(ItemType::PARTICLE) && family !== null)
 		{
 			error(ONLY_DOF_OR_PARTICLE_CAN_HAVE_FAMILY, ModanePackage.Literals.VARIABLE__FAMILY)
 			return false
@@ -491,12 +491,12 @@ class ModaneValidator extends UniqueNameValidator
 	{
 		if (type == SimpleType::STRING)
 		{
-			if (support != ItemType::NO_ITEM)
+			if (support !== null)
 			{
 				error("Variable invalide : pas de support possible avec le type String", supportLiteral)
 				return false
 			}
-			if (multiplicity == VariableMultiplicity::ARRAY2)
+			if (multiplicity !== null && multiplicity.type == VariableMultiplicityType::ARRAY2)
 			{
 				error("Variable invalide : Array2 impossible avec le type String", multiplicityLiteral)
 				return false
@@ -521,7 +521,7 @@ class ModaneValidator extends UniqueNameValidator
 			return false
 		}
 
-		if (support != ItemType::NO_ITEM && multiplicity == VariableMultiplicity::ARRAY2)
+		if (support !== null && multiplicity !== null && multiplicity.type == VariableMultiplicityType::ARRAY2)
 		{
 			error("Variable invalide : Array2 impossible avec un support", multiplicityLiteral)
 			return false
@@ -531,27 +531,36 @@ class ModaneValidator extends UniqueNameValidator
 	}
 
 	@Check
-	def multipleIdenticalVarRef(EntryPoint ep) { return multipleIdenticalVarRef(ep.vars, ModanePackage.Literals.ENTRY_POINT__VARS) }
+	def multipleIdenticalVarRef(EntryPoint ep) {
+		return multipleIdenticalVarRef(ep.inVars, Direction::IN, ModanePackage.Literals.ENTRY_POINT__IN_VARS) &&
+				multipleIdenticalVarRef(ep.outVars, Direction::OUT, ModanePackage.Literals.ENTRY_POINT__OUT_VARS) &&
+				multipleIdenticalVarRef(ep.inOutVars, Direction::INOUT, ModanePackage.Literals.ENTRY_POINT__IN_OUT_VARS)
+	}
 
 	@Check
 	def multipleIdenticalVarRef(Function f)
 	{
-		val vars =  f.vars.filter(VarReference)
-		return multipleIdenticalVarRef(vars, ModanePackage.Literals.FUNCTION__VARS)
+		return multipleIdenticalVarRef(f.inVars, Direction::IN, ModanePackage.Literals.FUNCTION__IN_VARS) &&
+				multipleIdenticalVarRef(f.outVars, Direction::OUT, ModanePackage.Literals.FUNCTION__OUT_VARS) &&
+				multipleIdenticalVarRef(f.inOutVars, Direction::INOUT, ModanePackage.Literals.FUNCTION__IN_OUT_VARS)
 	}
 
 	@Check
-	def multipleIdenticalVarRef(OverrideFunction f) { return multipleIdenticalVarRef(f.vars, ModanePackage.Literals.OVERRIDE_FUNCTION__VARS) }
+	def multipleIdenticalVarRef(OverrideFunction f) {
+		return multipleIdenticalVarRef(f.inVars, Direction::IN, ModanePackage.Literals.OVERRIDE_FUNCTION__IN_VARS) &&
+				multipleIdenticalVarRef(f.outVars, Direction::OUT, ModanePackage.Literals.OVERRIDE_FUNCTION__OUT_VARS) &&
+				multipleIdenticalVarRef(f.inOutVars, Direction::INOUT, ModanePackage.Literals.OVERRIDE_FUNCTION__IN_OUT_VARS)
+	}
 
-	private def multipleIdenticalVarRef(Iterable<VarReference> vars, EReference literal)
+	private def multipleIdenticalVarRef(Iterable<VarReference> vars, Direction direction, EReference literal)
 	{
 		var ok = true
 		for (i : 0..<vars.length)
 		{
 			val v1 = vars.get(i)
-			if (vars.exists[v2 | v1 != v2 && v1.direction == v2.direction && v1.variable == v2.variable])
+			if (vars.exists[v2 | v1 != v2 && v1.variable == v2.variable])
 			{
-				warning("La variable '" + v1.variable.name + "' est référencée plusieurs fois en '" + v1.direction.literal + "'", literal, i)
+				warning("La variable '" + v1.variable.name + "' est référencée plusieurs fois en '" + direction.literal + "'", literal, i)
 				ok = false
 			}
 		}

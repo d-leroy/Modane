@@ -9,21 +9,22 @@
  *******************************************************************************/
 package fr.cea.modane.generator.cpp
 
+import fr.cea.modane.generator.cmake.ModelInfo
 import fr.cea.modane.modane.Struct
-import java.util.Collection
 import org.eclipse.xtext.generator.IFileSystemAccess
 
 import static extension fr.cea.modane.ModaneElementExtensions.*
+import static extension fr.cea.modane.ModaneStringExtensions.*
 import static extension fr.cea.modane.generator.cpp.PtyExtensions.*
 import static extension fr.cea.modane.generator.cpp.ReferenceableExtensions.*
 
 class StructExtensions 
 {
-	static def compile(Struct it, IFileSystemAccess fsa, Collection<String> cmakeFiles)
+	static def compile(Struct it, IFileSystemAccess fsa, ModelInfo modelInfo)
 	{
 		val context = GenerationContext::Current
 		context.newFile(outputPath, referencedFileName, true, false)
-		cmakeFiles += referencedFileName
+		modelInfo.cppFiles += referencedFileName
 		context.addContent(interfaceContent)
 		context.addContent(GenerationContext::Separator)
 		context.addContent(developerClassContent)
@@ -34,7 +35,9 @@ class StructExtensions
 	'''
 		/*!
 		 * \brief Interface représentant la structure «name»
-		 * «description»
+		 «FOR l : fromDescription»
+		 * «l»
+		 «ENDFOR»
 		 */
 		class «referencedName»
 		«FOR parent : parents BEFORE ': ' SEPARATOR ', '»
@@ -51,13 +54,15 @@ class StructExtensions
 		  «IF p.needHasAccessor»«p.abstractHasAccessorContent»«ENDIF»
 		  «ENDFOR»
 		};
-	'''	
-	
+	'''
+
 	private static def getDeveloperClassContent(Struct it)
 	'''
 		/*!
 		 * Classe représentant la structure «name»
-		 * «description»
+		 «FOR l : fromDescription»
+		 * «l»
+		 «ENDFOR»
 		 */
 		class «developerName»
 		: public «referencedName»
@@ -89,18 +94,18 @@ class StructExtensions
 		  «FOR p : properties SEPARATOR '\n'»«p.attrTypeName» «p.fieldName»;«ENDFOR»
 		};
 	'''
-	
- 	private static def getDeveloperNameWithNs(Struct it)
- 	{
+
+	private static def getDeveloperNameWithNs(Struct it)
+	{
 		val context = GenerationContext::Current
 		context.addInclude(outputPath, developerFileName)
 		if (nsName != context.nsName && !context.isAUsedNs(nsName))
 			'::' + nsName + '::' + developerName
 		else
 			developerName	
- 	}
+	}
 
 	/** La structure dans le même fichier .h que son interface */
- 	private static def getDeveloperFileName(Struct it) { referencedFileName }
- 	private static def getDeveloperName(Struct it) { name }
+	private static def getDeveloperFileName(Struct it) { referencedFileName }
+	private static def getDeveloperName(Struct it) { name }
 }

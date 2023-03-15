@@ -34,6 +34,8 @@ import static extension fr.cea.modane.ServiceExtensions.*
 
 class Utils
 {
+	static public val FileExtension = ".m"
+
 	static def IResource toEclipseResource(Resource emfResource) { emfResource.URI.toEclipseResource }
 
 	static def IResource toEclipseResource(URI uri)

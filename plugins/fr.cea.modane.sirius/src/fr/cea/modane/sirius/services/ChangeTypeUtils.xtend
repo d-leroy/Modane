@@ -34,7 +34,13 @@ import fr.cea.modane.modane.Reference
 class ChangeTypeUtils 
 {
 	/** Bug Sirius ? impossible d'affecter la valeur d'énuméré Real à un SimpleType. Les autres valeurs fonctionnent ! */
-	def createRealType(Pty p) { createTypeInstance(SimpleType::REAL) }
+	def createRealType(Pty p)
+	{
+		createTypeInstance(
+			ModaneFactory::eINSTANCE.createSimple => [
+				type = SimpleType::REAL
+			])
+	}
 	def getTypeName(Pty p) { if (p.type === null) 'null' else p.type.name }
 	def getTypeName(Function f) { if (f.type === null) 'void' else f.type.name }
 		
@@ -87,8 +93,17 @@ class ChangeTypeUtils
 	def Collection<Object> getAllAvailableTypes(EObject context) 
 	{
 		val choices = new ArrayList<Object>
-		choices += SimpleType.VALUES
-		choices += ItemType.VALUES.filter[i | i !== ItemType::NO_ITEM]
+		choices += #['bool', 'String', 'Integer', 'Int32', 'Int64', 'Real'].map[s|
+			ModaneFactory::eINSTANCE.createSimple => [
+				type = SimpleType.getByName(s)
+			]
+		]
+		choices += #[#[2], #[3], #[2,2], #[3,3]].map[d|
+			ModaneFactory::eINSTANCE.createSimple => [
+				type = SimpleType.getByName('''Real«d.join('x')»''')
+			]
+		]
+		choices += ItemType.VALUES
 		choices += ItemGroupType.VALUES.filter[i | i !== ItemGroupType::NO_ITEM_GROUP]
 		choices += context.allReferenceables
 		choices
@@ -97,7 +112,7 @@ class ChangeTypeUtils
 	def getDisplayName(Object element) 
 	{
 		if (element instanceof Referenceable) element.name
-		else element.toString					
+		else element.toString
 	}
 	
 	def getTypeOfType(PtyOrArgType poat)

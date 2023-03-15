@@ -21,7 +21,7 @@ class ModaneResourceVisitor implements IResourceVisitor
 	
 	override visit(IResource resource) throws CoreException 
 	{
-		if (resource.name.endsWith(".modane"))
+		if (resource.name.endsWith(Utils.FileExtension))
 			modaneFiles.add(resource)	
 		else if (resource.name.equals("bin"))
 			return false

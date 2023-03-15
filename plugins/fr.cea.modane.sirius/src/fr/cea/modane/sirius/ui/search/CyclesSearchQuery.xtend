@@ -38,7 +38,7 @@ class CyclesSearchQuery implements ISearchQuery
 	def getGraph() { graph }
 	override canRerun() { true }
 	override canRunInBackground() { true }
-	override getLabel() { 'Modane - Find Cross References' }	
+	override getLabel() { 'Modane - Find Cross References' }
 	override getSearchResult() { result }
 	
 	override run(IProgressMonitor monitor) throws OperationCanceledException 

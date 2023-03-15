@@ -10,6 +10,7 @@
 package fr.cea.modane.generator.axl
 
 import com.google.inject.Inject
+import fr.cea.modane.modane.Comment
 import fr.cea.modane.modane.Enumeration
 import fr.cea.modane.modane.Interface
 import fr.cea.modane.modane.Item
@@ -54,7 +55,7 @@ class PtyExtensions
 	'''
 		<simple 
 			name="«name.separateWith('-')»"
-			type="«t.type.literal.toLowerCase»"
+			type="«t.type.getName.toLowerCase»"
 			«IF defaultValue !== null» default="«defaultValue»"«ENDIF»
 			«arcaneBound»>
 				«idBlock»
@@ -170,15 +171,16 @@ class PtyExtensions
 
 	private def getIdBlock(Pty it)  { getIdBlock(categories, namefr, description) }
 
-	private def getIdBlock(List<UserCategory> categories, String namefr, String description)
+	private def getIdBlock(List<UserCategory> categories, String namefr, Comment description)
 	{
 		var result = ""
 		for (c : categories)
 			result += "<userclass>" + c.name + "</userclass>"
 		if (!namefr.nullOrEmpty)
 			result += "<name lang='fr'>" + namefr.separateWith('-') + "</name>"
-		if (!description.nullOrEmpty)
-			result += description.formatDescription
+		val formattedDescription = description.formatDescription
+		if (!formattedDescription.nullOrEmpty)
+			result += formattedDescription
 		return result;
 	}
 }

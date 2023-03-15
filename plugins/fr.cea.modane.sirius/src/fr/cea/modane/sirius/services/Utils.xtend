@@ -62,9 +62,12 @@ class Utils
 
 	static def getReturnTypeName(Function it)
 	{
-		if (type === null) 'void'
+		if (type === null)
+			'void'
+		else if (multiple)
+			type.name + '*'
 		else
-			multiplicity.literal + ' ' + type.name
+			type.name
 	}
 
 	//TODO Vérifier toujours utile ?
@@ -114,17 +117,20 @@ class Utils
 
 	static def dispatch getDisplayExpression(ArgDefinition it)
 	{
-		#[direction.literal, multiplicity.literal, type.name, name].join(' ')
+		if (multiple)
+			#[direction.literal, '*', type.name, name].join(' ')
+		else
+			#[direction.literal, type.name, name].join(' ')
 	}
 
 	static def dispatch getDisplayExpression(VarDefinition it)
 	{
-		#[direction.literal, support.literal, multiplicity.literal, type.literal, name].join(' ')
+		#[direction.literal, supports.empty ? '' : supports.get(0).type.getName, multiplicity === null ? '' : multiplicity.type.literal, type.getName, name].join(' ')
 	}
 
 	static def dispatch getDisplayExpression(VarReference it)
 	{
-		direction.literal + " " + variable.name
+		variable.name
 	}
 
 	static def getFamilyDisplayExpression(Variable it)
@@ -169,13 +175,13 @@ class Utils
 		else c.modaneModel
 	}
 
-	static def dispatch getFormatedDescription(ModaneElement it) { description.format }
-	static def dispatch getFormatedDescription(Pty it) { description.format }
-	static def dispatch getFormatedDescription(EntryPoint it) { description.format }
-	static def dispatch getFormatedDescription(Function it) { description.format }
-	static def dispatch getFormatedDescription(OverrideFunction it) { description.format }
-	static def dispatch getFormatedDescription(UnitTestFunction it) { description.format }
-	static def dispatch getFormatedDescription(EnumerationLiteral it) { description.format }
+	static def dispatch getFormatedDescription(ModaneElement it) { description.comment.format }
+	static def dispatch getFormatedDescription(Pty it) { description.comment.format }
+	static def dispatch getFormatedDescription(EntryPoint it) { description.comment.format }
+	static def dispatch getFormatedDescription(Function it) { description.comment.format }
+	static def dispatch getFormatedDescription(OverrideFunction it) { description.comment.format }
+	static def dispatch getFormatedDescription(UnitTestFunction it) { description.comment.format }
+	static def dispatch getFormatedDescription(EnumerationLiteral it) { description.comment.format }
 	static def dispatch getFormatedDescription(EObject it) { "" }
 
 	private static def format(String description)

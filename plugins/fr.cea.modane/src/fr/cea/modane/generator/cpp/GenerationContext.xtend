@@ -11,7 +11,9 @@ package fr.cea.modane.generator.cpp
 
 import fr.cea.modane.ModaneOutputConfigurationProvider
 import fr.cea.modane.generator.GenerationOptions
-import java.util.ArrayList
+import java.util.List
+import java.util.Map
+import java.util.Set
 import org.eclipse.xtext.generator.IFileSystemAccess
 
 class GenerationContext
@@ -25,7 +27,7 @@ class GenerationContext
 		/*---------------------------------------------------------------------------*/
 		/*---------------------------------------------------------------------------*/
 		
-	'''	
+	'''
 
 	public static GenerationContext Current = null
 	public val GenerationOptions generationOptions
@@ -33,9 +35,14 @@ class GenerationContext
 	String path
 	String name
 	String content
-	ArrayList<String> includes
-	ArrayList<String> arcaneIncludes
-	ArrayList<String> usedNs
+	List<String> includes
+	List<String> arcaneIncludes
+	Map<String, List<String>> flaggedArcaneIncludes
+	Map<String, List<String>> flaggedIncludes
+	List<String> usedNs
+
+	public Set<String> embeddedModules = newHashSet
+	public Set<String> cmakeVariables = newHashSet
 
 	new(GenerationOptions options)
 	{
@@ -48,9 +55,11 @@ class GenerationContext
 		this.path = path
 		this.name = name
 		this.content = ""
-		this.arcaneIncludes = new ArrayList<String>
-		this.includes = new ArrayList<String>
-		this.usedNs = new ArrayList<String>
+		this.arcaneIncludes = newArrayList
+		this.flaggedArcaneIncludes = newHashMap
+		this.includes = newArrayList
+		this.flaggedIncludes = newHashMap
+		this.usedNs = newArrayList
 
 		if (withIncludes)
 		{
@@ -88,7 +97,7 @@ class GenerationContext
 		else addInclude(path + '/' + file)
 	}
 
-	def addInclude(String include) 
+	def addInclude(String include)
 	{
 		if (include.startsWith('arcane/'))
 		{
@@ -102,8 +111,30 @@ class GenerationContext
 		}
 	}
 
+	def addFlaggedInclude(String path, String file, String flag)
+	{
+		if (path.nullOrEmpty) addFlaggedInclude(file, flag)
+		else addFlaggedInclude(path + '/' + file, flag)
+	}
+
+	def addFlaggedInclude(String include, String flag)
+	{
+		if (include.startsWith('arcane/'))
+		{
+			val arcaneIncludes = flaggedArcaneIncludes.computeIfAbsent(flag, [newArrayList])
+			if (!arcaneIncludes.contains(include))
+				arcaneIncludes += include
+		}
+		else
+		{
+			val includes = flaggedIncludes.computeIfAbsent(flag, [newArrayList])
+			if (!includes.contains(include) && include != fullName)
+				includes += include
+		}
+	}
+
 	def addUsedNs(String value)
-	{ 
+	{
 		if (nsName != value && !usedNs.contains(value))
 			usedNs += value
 	}
@@ -133,19 +164,36 @@ class GenerationContext
 		#ifndef «ifndefTag»
 		#define «ifndefTag»
 		«Separator»
-		«FOR i : arcaneIncludes + includes»
-		#include "«i»"
+		«FOR i : arcaneIncludes»
+			#include "«i»"
+		«ENDFOR»
+		«FOR e : flaggedArcaneIncludes.entrySet»
+			#if «e.key»
+			«FOR i : e.value»
+			#include "«i»"
+			«ENDFOR»
+			#endif
+		«ENDFOR»
+		«FOR i : includes»
+			#include "«i»"
+		«ENDFOR»
+		«FOR e : flaggedIncludes.entrySet»
+			#if «e.key»
+			«FOR i : e.value»
+			#include "«i»"
+			«ENDFOR»
+			#endif
 		«ENDFOR»
 		«Separator»
 		«FOR i : usedNs»
-		using namespace «i»;
+			using namespace «i»;
 		«ENDFOR»
 		«IF !path.empty»namespace «nsName» {«ENDIF»
 		«Separator»
 		«content»
 		«IF !path.empty»
-		«Separator»
-		}  // namespace «nsName»
+			«Separator»
+			}  // namespace «nsName»
 		«ENDIF»
 		«Separator»
 		#endif  // «ifndefTag»

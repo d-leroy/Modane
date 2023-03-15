@@ -40,6 +40,7 @@ public class GenerateTitleDialog extends TitleAreaDialog
 	private Combo packagesCombo;
 	private Text outputDirText;
 	private Text packagePrefixText;
+	private Button scihookInstrumentationBtn;
 	private Button writeModaneFilesBtn;
 	private Button writeCMakeFilesBtn;
 
@@ -134,6 +135,18 @@ public class GenerateTitleDialog extends TitleAreaDialog
 		gd_grpOptions.widthHint = 153;
 		grpOptions.setLayoutData(gd_grpOptions);
 		grpOptions.setText("Options");
+
+		scihookInstrumentationBtn = new Button(grpOptions, SWT.CHECK);
+		scihookInstrumentationBtn.setSize(221, 17);
+		scihookInstrumentationBtn.addSelectionListener(new SelectionAdapter() 
+		{
+			@Override
+			public void widgetSelected(SelectionEvent e)
+			{
+			}
+		});
+		scihookInstrumentationBtn.setText("Instrumentation SciHook");
+
 		writeModaneFilesBtn = new Button(grpOptions, SWT.CHECK);
 		writeModaneFilesBtn.setSize(221, 17);
 		writeModaneFilesBtn.addSelectionListener(new SelectionAdapter() 
@@ -143,7 +156,7 @@ public class GenerateTitleDialog extends TitleAreaDialog
 			{
 			}
 		});
-		writeModaneFilesBtn.setText("Ecriture des fichiers '.modane'");
+		writeModaneFilesBtn.setText("Ecriture des fichiers '" + fr.cea.modane.Utils.FileExtension + "'");
 		
 		writeCMakeFilesBtn = new Button(grpOptions, SWT.CHECK);
 		writeCMakeFilesBtn.setSize(221, 17);
@@ -218,6 +231,7 @@ public class GenerateTitleDialog extends TitleAreaDialog
 			// Autres options
 			if (options.hasOutputDir()) outputDirText.setText(options.getOutputDir());
 			if (options.hasPackagePrefix()) packagePrefixText.setText(options.getPackagePrefix());
+			scihookInstrumentationBtn.setSelection(options.isSciHookInstrumentation());
 			writeModaneFilesBtn.setSelection(options.isWriteModaneFiles());
 			writeCMakeFilesBtn.setSelection(options.isWriteCmakeFiles());
 		}
@@ -232,6 +246,7 @@ public class GenerateTitleDialog extends TitleAreaDialog
 		{
 			options.setOutputDir(outputDirText.getText());
 			options.setPackagePrefix(packagePrefixText.getText());
+			options.setSciHookInstrumentation(scihookInstrumentationBtn.getSelection());
 			options.setWriteModaneFiles(writeModaneFilesBtn.getSelection());
 			options.setWriteCMakeFiles(writeCMakeFilesBtn.getSelection());
 

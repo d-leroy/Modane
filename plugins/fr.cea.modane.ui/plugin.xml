@@ -18,7 +18,7 @@
               class="fr.cea.modane.ui.ModaneExecutableExtensionFactory:org.eclipse.xtext.ui.editor.XtextEditor"
               contributorClass="org.eclipse.ui.editors.text.TextEditorActionContributor"
               default="true"
-              extensions="modane"
+              extensions="m"
               icon="icons/modane.gif"
               id="fr.cea.modane.Modane"
               name="Modane Editor">

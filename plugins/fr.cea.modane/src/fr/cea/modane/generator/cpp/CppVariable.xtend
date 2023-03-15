@@ -12,6 +12,7 @@ package fr.cea.modane.generator.cpp
 import fr.cea.modane.modane.Direction
 import fr.cea.modane.modane.VarDefinition
 import fr.cea.modane.modane.VarReference
+import java.util.List
 
 import static extension fr.cea.modane.ModaneStringExtensions.*
 import static extension fr.cea.modane.generator.cpp.ItemTypeExtensions.*
@@ -20,7 +21,7 @@ import static extension fr.cea.modane.generator.cpp.VariableExtensions.*
 abstract class CppVariable 
 {
 	abstract def String getName()
-	abstract def String getDescription()
+	abstract def List<String> getDescription()
 	abstract def Direction getDirection()
 	abstract def boolean isComponent()
 	abstract def String getTypeName()
@@ -43,21 +44,31 @@ class CppVarDefinition extends CppVariable
 	override getName() { v.name }
 	override getDescription() { null }
 	override getDirection() { v.direction }
-	override isComponent() { v.support.component }
-	override getTypeName() { getTypeName(v.type, v.support, v.multiplicity) }
+	override isComponent() {
+		val supports = v.supports
+		!supports.empty && supports.get(0).type.component
+	}
+	override getTypeName() { getTypeName(v.type, v.supports, v.multiplicity) }
 	override getArgName() { v.name }	
 }
 
 class CppVarReference  extends CppVariable
 {
 	VarReference v
+	Direction d
 	
-	new(VarReference variable) { v = variable }
+	new(VarReference variable, Direction direction) {
+		v = variable
+		d  = direction
+	}
 
 	override getName() { v.variable.name.separateWith('_') }
-	override getDescription() { v.variable.description }
-	override getDirection() { v.direction }
-	override isComponent() { v.variable.support.component }
+	override getDescription() { v.variable.fromDescription }
+	override getDirection() { d }
+	override isComponent() {
+		val supports = v.variable.supports
+		!supports.empty && supports.get(0).type.component
+	}
 	override getTypeName() { v.variable.typeName }
 	override getArgName() { fieldName }
 }

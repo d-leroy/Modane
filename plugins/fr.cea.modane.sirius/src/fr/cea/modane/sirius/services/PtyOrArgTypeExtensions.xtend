@@ -14,6 +14,7 @@ import fr.cea.modane.modane.ItemGroup
 import fr.cea.modane.modane.Pty
 import fr.cea.modane.modane.Reference
 import fr.cea.modane.modane.Simple
+import fr.cea.modane.modane.SimpleType
 
 class PtyOrArgTypeExtensions 
 {
@@ -25,7 +26,8 @@ class PtyOrArgTypeExtensions
 	static def dispatch getRealType(ItemGroup it) { type }
 	static def dispatch getRealType(Reference it) { target }
 
-	static def dispatch getName(Simple it) { type.literal }
+	static def dispatch String getName(SimpleType it)  { getName }
+	static def dispatch getName(Simple it) { type }
 	static def dispatch getName(Item it) { type }
 	static def dispatch getName(ItemGroup it) { type }
 	static def dispatch getName(Reference it) 

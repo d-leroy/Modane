@@ -17,7 +17,6 @@ import org.eclipse.sirius.viewpoint.DSemanticDecorator;
 
 import com.google.common.collect.Lists;
 
-import fr.cea.modane.modane.ArgMultiplicity;
 import fr.cea.modane.modane.Function;
 import fr.cea.modane.modane.Referenceable;
 
@@ -71,7 +70,7 @@ public class ConfirmDeletionServices {
 			for (EObject eObject : modifiedElements) {
 				if (eObject instanceof Function) {
 					((Function) eObject).setType(null);
-					((Function) eObject).setMultiplicity(ArgMultiplicity.SCALAR);
+					((Function) eObject).setMultiple(false);
 				}
 			}
 		}

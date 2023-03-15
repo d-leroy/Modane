@@ -42,7 +42,8 @@ class UmlToCpp
 		generator.messageDispatcher
 	}
 
-	def generate(Model umlModel, String absoluteOutputPath, String packagePrefix, String packageToGenerate, boolean generateCMakeLists, boolean writeModaneFiles)
+	def generate(Model umlModel, String absoluteOutputPath, String packagePrefix, String packageToGenerate,
+			boolean profAccInstrumentation, boolean sciHookInstrumentation, boolean generateCMakeLists, boolean generateCMake, boolean writeModaneFiles)
 	{
 		val startTime = System.currentTimeMillis
 
@@ -52,7 +53,7 @@ class UmlToCpp
 		messageDispatcher.post(MessageType.Exec, "UML to Modane model transformation ended in " + (afterConvertionTime-startTime)/1000.0 + "s")
 
 		messageDispatcher.post(MessageType.Exec, "Starting code generation")
-		generator.generate(resources, absoluteOutputPath, packageToGenerate, generateCMakeLists)
+		generator.generate(resources, absoluteOutputPath, packageToGenerate, profAccInstrumentation, sciHookInstrumentation, generateCMakeLists, generateCMake)
 		val afterGenerationTime = System.currentTimeMillis
 		messageDispatcher.post(MessageType.Exec, "Code generation ended in " + (afterGenerationTime-afterConvertionTime)/1000.0 + "s")
 

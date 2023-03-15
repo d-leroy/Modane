@@ -51,8 +51,8 @@ class ServiceCppMethodContainer implements CppMethodContainer
 
 	override getAllMethods()
 	{
-		s.functions.map[f | new FunctionCppMethod(f, shortName)] +
-		s.overrideFuncs.map[f | new OverrideFunctionCppMethod(f, shortName)]
+		s.functions.map[f | new FunctionCppMethod(f, this, shortName)] +
+		s.overrideFuncs.map[f | new OverrideFunctionCppMethod(f, this, shortName)]
 	}
 
 	override getUnitTestMethodNames() 
@@ -83,9 +83,9 @@ class ModuleCppMethodContainer implements CppMethodContainer
 
 	override getAllMethods()
 	{
-		m.entryPoints.map[f | new EntryPointCppMethod(f, shortName)] +
-		m.functions.map[f | new FunctionCppMethod(f, shortName)] +
-		m.overrideFuncs.map[f | new OverrideFunctionCppMethod(f, shortName)]
+		m.entryPoints.map[f | new EntryPointCppMethod(f, this, shortName)] +
+		m.functions.map[f | new FunctionCppMethod(f, this, shortName)] +
+		m.overrideFuncs.map[f | new OverrideFunctionCppMethod(f, this, shortName)]
 	}
 }
 
@@ -109,6 +109,6 @@ class InterfaceCppMethodContainer implements CppMethodContainer
 
 	override getAllMethods() 
 	{
-		i.allFunctions.map[f | new FunctionCppMethod(f, shortName)]
+		i.allFunctions.map[f | new FunctionCppMethod(f, this, shortName)]
 	}
 }

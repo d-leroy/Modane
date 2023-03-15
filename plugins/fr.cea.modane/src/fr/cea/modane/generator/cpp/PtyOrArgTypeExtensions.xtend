@@ -9,6 +9,7 @@
  *******************************************************************************/
 package fr.cea.modane.generator.cpp
 
+import fr.cea.modane.modane.FunctionItem
 import fr.cea.modane.modane.Item
 import fr.cea.modane.modane.ItemGroup
 import fr.cea.modane.modane.Reference
@@ -21,12 +22,13 @@ import static extension fr.cea.modane.generator.cpp.ReferenceableExtensions.*
 class PtyOrArgTypeExtensions 
 {
 	static def dispatch getTypeName(Reference it)	{ if (target === null) '' else target.referencedTypeName }
-	static def dispatch getTypeName(Simple it)		{ type.literal }
-	static def dispatch getTypeName(Item it)   		{ type.literal }
-	static def dispatch getTypeName(ItemGroup it)	{ type.literal }
+	static def dispatch getTypeName(Item it)   		{ type.getName }
+	static def dispatch getTypeName(ItemGroup it)	{ type.getName }
+	static def dispatch String getTypeName(Simple it) { type.getName }
 
 	static def dispatch isComponent(Reference it)	{ false }
 	static def dispatch isComponent(Simple it)		{ false }
-	static def dispatch isComponent(Item it)   		{ type.component }
+	static def dispatch isComponent(Item it)		{ type.component }
+	static def dispatch isComponent(FunctionItem it){ type.component }
 	static def dispatch isComponent(ItemGroup it)	{ type.component }
 }

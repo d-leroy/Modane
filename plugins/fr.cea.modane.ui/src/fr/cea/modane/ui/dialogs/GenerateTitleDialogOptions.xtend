@@ -22,8 +22,11 @@ class GenerateTitleDialogOptions
 	static val OutputDirPty = 'outputDir'
 	static val PackagePrefixPty = 'packagePrefix'
 	static val PackageToGeneratePty = 'packageToGenerate'
+	static val SciHookInstrumentationPty = 'sciHookInstrumentation'
+	static val ProfAccInstrumentationPty = 'profAccInstrumentation'
 	static val WriteModaneFilesPty = 'writeModaneFiles'
 	static val WriteCMakeFilesPty = 'writeCMakeFiles'
+	static val WriteCMakeListsFilesPty = 'writeCMakeListsFiles'
 
 	val pties = new Properties
 
@@ -34,12 +37,16 @@ class GenerateTitleDialogOptions
 	def getOutputDir() { pties.getProperty(OutputDirPty, 'src') }
 	def getPackagePrefix() { pties.getProperty(PackagePrefixPty, '') }
 	def getPackageToGenerate() { pties.getProperty(PackageToGeneratePty, '') }
+	def isSciHookInstrumentation()  { Boolean.parseBoolean(pties.getProperty(SciHookInstrumentationPty, 'false')) }
+	def isProfAccInstrumentation()  { Boolean.parseBoolean(pties.getProperty(ProfAccInstrumentationPty, 'false')) }
 	def isWriteModaneFiles()  { Boolean.parseBoolean(pties.getProperty(WriteModaneFilesPty, 'false')) }
+	def isWriteCmakeListsFiles()  { Boolean.parseBoolean(pties.getProperty(WriteCMakeListsFilesPty, 'false')) }
 	def isWriteCmakeFiles()  { Boolean.parseBoolean(pties.getProperty(WriteCMakeFilesPty, 'false')) }
 
 	def setOutputDir(String value) { pties.setProperty(OutputDirPty, value) }
 	def setPackagePrefix(String value) { pties.setProperty(PackagePrefixPty, value) }
 	def setPackageToGenerate(String value) { pties.setProperty(PackageToGeneratePty, value) }
+	def setSciHookInstrumentation(boolean value) { pties.setProperty(SciHookInstrumentationPty, value.toString) }
 	def setWriteModaneFiles(boolean value) { pties.setProperty(WriteModaneFilesPty, value.toString) }
 	def setWriteCMakeFiles(boolean value) { pties.setProperty(WriteCMakeFilesPty, value.toString) }
 

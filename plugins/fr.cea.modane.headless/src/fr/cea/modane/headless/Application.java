@@ -36,7 +36,11 @@ public class Application implements IApplication
 	String[] mdzipFiles = null;
 	String[] umlFiles = null;
 	String pkgToGenerate = null;
-	boolean writeCMakesFiles = false;
+	boolean sciHookInstrumentation = false;
+	boolean profAccInstrumentation = false;
+	boolean writeCMakeListsFiles = false;
+	boolean writeCMakeFiles = false;
+	boolean writeModaneFiles = false;
 
 	/**
 	 * Always return Application.EXIT_OK to avoid an unexpected message dialog window.
@@ -106,9 +110,9 @@ public class Application implements IApplication
 
 					System.out.println(">>>>> Starting generation process for: " + umlFile);
 					if (pkgToGenerate == null)
-						umlToCpp.generate(model, cppDir, "", "", writeCMakesFiles, false);
+						umlToCpp.generate(model, cppDir, "", "", profAccInstrumentation, sciHookInstrumentation, writeCMakeListsFiles, writeCMakeFiles, writeModaneFiles);
 					else
-						umlToCpp.generate(model, cppDir, "", pkgToGenerate, writeCMakesFiles, false);
+						umlToCpp.generate(model, cppDir, "", pkgToGenerate, profAccInstrumentation, sciHookInstrumentation, writeCMakeListsFiles, writeCMakeFiles, writeModaneFiles);
 
 					System.out.println(">>>>> Generation process ended successfully for: " + umlFile);
 				}
@@ -127,8 +131,8 @@ public class Application implements IApplication
 	private void printUsage()
 	{
 		System.out.println("Usage (Directories need absolute pathes and package separator is '.': A, A.B, A.B.C...):");
-		System.out.println("  Generate from a '.mdzip' model: modane --cpp-dir <AXL_AND_CPP_FILES_OUTPUT_DIR> --uml-dir <UML_FILES_OUTPUT_DIR> --mdzip <MDZIP_MODEL_FILE> [--pkg <PACKAGE_NAME_TO_GENERATE>] [--cmakes]");
-		System.out.println("  Generate from a '.uml'   model: modane --cpp-dir <AXL_AND_CPP_FILES_OUTPUT_DIR> --uml <UML_ROOT_MODEL_FILE> [--pkg <PACKAGE_NAME_TO_GENERATE>] [--cmakes]");
+		System.out.println("  Generate from a '.mdzip' model: modane --cpp-dir <AXL_AND_CPP_FILES_OUTPUT_DIR> --uml-dir <UML_FILES_OUTPUT_DIR> --mdzip <MDZIP_MODEL_FILE> [--pkg <PACKAGE_NAME_TO_GENERATE>] [--cmakes] [--scihook] [--profacc]");
+		System.out.println("  Generate from a '.uml'   model: modane --cpp-dir <AXL_AND_CPP_FILES_OUTPUT_DIR> --uml <UML_ROOT_MODEL_FILE> [--pkg <PACKAGE_NAME_TO_GENERATE>] [--cmakes] [--scihook] [--profacc]");
 		System.out.println("  Note: --mdzip and --uml options accept a list of comma separated files (no space)");
 	}
 
@@ -155,7 +159,11 @@ public class Application implements IApplication
 				break;
 			}
 			case "--pkg": pkgToGenerate = appArgs[++i]; break;
-			case "--cmakes": writeCMakesFiles = true; break;
+			case "--scihook": sciHookInstrumentation = true; break;
+			case "--profacc": profAccInstrumentation = true; break;
+			case "--cmakelists": writeCMakeListsFiles = true; break;
+			case "--cmakes": writeCMakeFiles = true; break;
+			case "-m": writeModaneFiles = true; break;
 			default:
 			{
 				System.out.println("Unknow option: " + appArgs[i]);

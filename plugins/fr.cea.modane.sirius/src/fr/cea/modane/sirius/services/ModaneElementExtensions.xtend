@@ -24,7 +24,7 @@ import java.util.List
 
 import static extension fr.cea.modane.sirius.services.ModaneElementColorExtensions.*
 
-class ModaneElementExtensions 
+class ModaneElementExtensions
 {
 	static def dispatch getProperties(ServiceOrModule it) { properties }
 	static def dispatch getProperties(Struct it) { properties }

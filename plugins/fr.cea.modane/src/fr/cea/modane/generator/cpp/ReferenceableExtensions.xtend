@@ -17,7 +17,7 @@ import fr.cea.modane.modane.Struct
 
 import static extension fr.cea.modane.ModaneElementExtensions.*
 
-class ReferenceableExtensions 
+class ReferenceableExtensions
 {
 	static def getReferencedTypeName(Referenceable it)
 	{
@@ -26,24 +26,24 @@ class ReferenceableExtensions
 		else
 			referencedNameWithNs + '*'
 	}
- 
- 	static def dispatch getReferencedNameWithNs(Referenceable it)
- 	{
+
+	static def dispatch getReferencedNameWithNs(Referenceable it)
+	{
 		val context = GenerationContext::Current
 		if (context.name.endsWith(GenerationContext::HeaderExtension)) context.addInclude(outputPath, referencedFileName)
 		if (nsName != context.nsName && !context.isAUsedNs(nsName))
 			'::' + nsName + '::' + referencedName
 		else
 			referencedName	
- 	}
- 	
- 	static def dispatch getReferencedNameWithNs(Legacy it)
- 	{
+	}
+
+	static def dispatch getReferencedNameWithNs(Legacy it)
+	{
 		val context = GenerationContext::Current
 		if (context.name.endsWith(GenerationContext::HeaderExtension) && !originFile.nullOrEmpty) context.addInclude(originFile)
 		if (originNamespace.nullOrEmpty) referencedName
 		else '::' + originNamespace + '::' + referencedName
- 	}
+	}
 
 	static def dispatch getReferencedName(Struct it) { 'I' + name }
 	static def dispatch getReferencedName(Interface it) { 'I' + name }
@@ -51,7 +51,7 @@ class ReferenceableExtensions
 
 	static def dispatch getReferencedFileName(Legacy it) { originFile }
 	static def dispatch getReferencedFileName(Referenceable it) 
-	{ 
+	{
 		#[GenerationContext::GenFilePrefix, referencedName, GenerationContext::HeaderExtension].join
 	}
 }

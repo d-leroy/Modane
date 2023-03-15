@@ -46,7 +46,9 @@ class ModelTransformer
 				newServices += s
 				// même nom que l'interface sans le I
 				s.name = interf.defaultImplementationName
-				s.description = "Service par défaut pour l'interface " + interf.name
+				s.description = ModaneFactory::eINSTANCE.createComment => [
+					it.comment = "Service par défaut pour l'interface " + interf.name
+				]
 				s.type = ServiceType::CASEOPTION
 				s.interfaces += interf
 				for (interfFunc : interf.functions)

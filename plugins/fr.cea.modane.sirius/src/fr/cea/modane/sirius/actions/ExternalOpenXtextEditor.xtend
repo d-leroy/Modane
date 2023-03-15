@@ -30,7 +30,7 @@ class ExternalOpenXtextEditor implements IExternalJavaAction
 		selections.exists[o|o.eClass.EPackage == ModanePackage::eINSTANCE]
 	}
 	
-	override execute(Collection<? extends EObject> selections, Map<String, Object> parameters) 
+	override execute(Collection<? extends EObject> selections, Map<String, Object> parameters)
 	{
 		for (o : selections.filter[x | x.eClass.EPackage == ModanePackage::eINSTANCE])
 			switch o
@@ -38,9 +38,9 @@ class ExternalOpenXtextEditor implements IExternalJavaAction
 				Function case parameters.containsKey(PARAMETER_ARGS) : 
 					utils.openXtextEditor(o, ModanePackage::eINSTANCE.function_Args)
 				Function case parameters.containsKey(PARAMETER_VARS) : 
-					utils.openXtextEditor(o, ModanePackage::eINSTANCE.function_Vars)
+					utils.openXtextEditor(o, ModanePackage::eINSTANCE.function_InVars)
 				EntryPoint case parameters.containsKey(PARAMETER_VARS) : 
-					utils.openXtextEditor(o, ModanePackage::eINSTANCE.entryPoint_Vars)
+					utils.openXtextEditor(o, ModanePackage::eINSTANCE.entryPoint_InVars)
 				default:
 					utils.openXtextEditor(o)
 			}
