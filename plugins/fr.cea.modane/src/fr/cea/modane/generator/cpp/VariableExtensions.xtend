@@ -21,7 +21,7 @@ import static extension fr.cea.modane.ModaneStringExtensions.*
 
 class VariableExtensions 
 {	
-	static def getFieldName(Variable it) { 'm_' + name.separateWith('_') }
+	static def getFieldName(Variable it) { 'm_' + name.separateWithDefault }
 	
 	static def getTypeName(Variable it) { getTypeName(type, supports, multiplicity) }	
 
@@ -34,14 +34,13 @@ class VariableExtensions
 			result = 'Variable'
 		} else {
 			val support = supports.get(0)
-			switch support
+			switch support.type
 			{
 				case ItemType::MAT_CELL : result = 'MaterialVariableCell'
 				case ItemType::ENV_CELL : result = 'EnvironmentVariableCell'
 				default : result = 'Variable' + support.type.getName
 			}
 		}
-		
 
 		if (mult === null) {
 			result += supports.empty ? 'Scalar' + tname : tname

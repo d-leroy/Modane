@@ -35,9 +35,7 @@ class StructExtensions
 	'''
 		/*!
 		 * \brief Interface représentant la structure «name»
-		 «FOR l : fromDescription»
-		 * «l»
-		 «ENDFOR»
+		 * «FOR l : fromDescription SEPARATOR '\n'»«l»«ENDFOR»
 		 */
 		class «referencedName»
 		«FOR parent : parents BEFORE ': ' SEPARATOR ', '»
@@ -60,9 +58,7 @@ class StructExtensions
 	'''
 		/*!
 		 * Classe représentant la structure «name»
-		 «FOR l : fromDescription»
-		 * «l»
-		 «ENDFOR»
+		 * «FOR l : fromDescription SEPARATOR '\n'»«l»«ENDFOR»
 		 */
 		class «developerName»
 		: public «referencedName»

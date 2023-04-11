@@ -103,14 +103,18 @@ class StandaloneGenerator
 		{
 			for (model : modelInfoByModel.keySet)
 			{
-				val subModelNames = model.getSubModelsNames(models)
 				val modelInfo = modelInfoByModel.get(model)
 				if (!modelInfo.empty)
 				{
 					if (generateCMake)
-						cMakeGenerator.generate(fsa, model.name, subModelNames, modelInfo)
+					{
+						cMakeGenerator.generate(fsa, model.name, modelInfo)
+					}
 					if (generateCMakeLists)
+					{
+						val subModelNames = model.getSubModelsNames(models)
 						cMakeListsGenerator.generate(fsa, model.name, subModelNames, modelInfo)
+					}
 				}
 			}
 		}
@@ -191,6 +195,14 @@ class StandaloneGenerator
 		val subModelNames = new ArrayList<String>
 		for (m : models)
 		{
+			if (m.name.nullOrEmpty)
+			{
+				throw new IllegalStateException()
+			}
+			if (parentModel.name.nullOrEmpty)
+			{
+				
+			}
 			if (m !== parentModel && m.name.startsWith(parentModel.name))
 			{
 				val subName = m.name.replaceFirst(parentModel.name + '.', "")

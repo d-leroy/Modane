@@ -46,7 +46,7 @@ class ClassExtensions
 	def getVarMult(Class it)
 	{
 		val umlMult = getValue(profile.variableSt, "multiplicity") as EnumerationLiteral
-		umlMult == 'Scalar' ? null : ModaneFactory::eINSTANCE.createVariableMultiplicity => [type = VariableMultiplicityType::getByName(umlMult.name)]
+		umlMult.name == 'Scalar' ? null : ModaneFactory::eINSTANCE.createVariableMultiplicity => [type = VariableMultiplicityType::getByName(umlMult.name)]
 	}
 
 	def getVarSupport(Class it)

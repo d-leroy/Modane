@@ -15,7 +15,7 @@ generate modane "http://www.cea.fr/modane/Modane"
 
 ModaneModel:
 	description=Comment?
-	'Model' name=QualifiedName ';'
+	'package' name=QualifiedName ';'
 	elements += ModaneElement*;
 
 NamedElement:
@@ -35,7 +35,7 @@ QualifiedName:
 Variable:
 	description=Comment?
 	'var' type=SimpleType (multiplicity=VariableMultiplicity)? name=ID '{' (supports+=Item (',' supports+=Item)?)? '}'
-	dump?=DUMP? restore?=RESTORE? executionDepend?=EXEC_DEP? needSync?=SYNC?
+	'@axlname' '('axlName=STRING')' dump?=DUMP? restore?=RESTORE? executionDepend?=EXEC_DEP? needSync?=SYNC?
 	('family' family=[ItemFamily|QualifiedName])? ';';
 
 // ----------------------------------------------------------------------------------------------------------------- //
@@ -84,10 +84,10 @@ Interface:
 
 Function:
 	description=Comment?
-	'def' const?='const'?
+	'def' (const?='const')?
 	('void'|(type=PtyOrArgType (multiple?='*')?))  name=ID
 	'(' (args+=Arg (',' args+=Arg)*)? ')'
-	 ('on' support=FunctionItem sequential?='sequentially'? )?
+	 ('on' support=FunctionItem)? (sequential?='sequential')?
 	 ('in' inVars+=VarReference (',' inVars+=VarReference)*)?
 	 ('out' outVars+=VarReference (',' outVars+=VarReference)*)?
 	 ('inout' inOutVars+=VarReference (',' inOutVars+=VarReference)*)?
@@ -161,15 +161,15 @@ Module:
 EntryPoint:
 	description=Comment?
 	('[' autoLoad=EntryPointAutoLoad ']')? 
-	'@' location=EntryPointLocation name=ID  
-	('on' support=FunctionItem sequential?='sequentially'? )?
+	location=EntryPointLocation name=ID  
+	('on' support=FunctionItem)? (sequential?='sequential')?
 	('in' inVars+=VarReference (',' inVars+=VarReference)*)?
 	('out' outVars+=VarReference (',' outVars+=VarReference)*)?
 	('inout' inOutVars+=VarReference (',' inOutVars+=VarReference)*)?
 	('call' calls+=[Function|QualifiedName] (',' calls+=[Function|QualifiedName])* )? ';';
 
 enum EntryPointLocation:
-	ComputeLoop | OnMeshChanged | OnMeshRefinement | Init | ContinueInit | StartInit | Restore | Build | Exit;
+	ComputeLoop='@ComputeLoop' | OnMeshChanged='@OnMeshChanged' | OnMeshRefinement='@OnMeshRefinement' | Init='@Init' | ContinueInit='@ContinueInit' | StartInit='@StartInit' | Restore='@Restore' | Build='@Build' | Exit='@Exit';
 
 enum EntryPointAutoLoad:
 	NoAutoLoad | AutoLoadBegin | AutoLoadEnd;
@@ -202,7 +202,7 @@ Reference:
 	target=[Referenceable|QualifiedName];
 
 enum SimpleType: 
-	bool='bool' | String='string'| Integer='integer' | Int32='int32' | Int64='int64' | Real='real' |
+	bool='bool' | String='string'| Integer='int' | Int32='int32' | Int64='int64' | Real='real' |
 	Real2='real[2]' | Real2x2='real[2,2]' | Real3='real[3]' | Real3x3='real[3,3]';
 
 enum ItemType:
@@ -224,7 +224,7 @@ enum PtyMultiplicity:
 	ZeroOne='[0..1]' | OneOne='[1..1]' | ZeroStar='[0..*]' | OneStar='[1..*]';
 
 enum VariableMultiplicityType:
-	array | array2;
+	Array='array' | Array2='array2';
 
 terminal DUMP:
 	'@dump';
@@ -233,7 +233,7 @@ terminal RESTORE:
 	'@rest';
 
 terminal EXEC_DEP:
-	'@execDep';
+	'@execdep';
 
 terminal SYNC:
 	'@sync';

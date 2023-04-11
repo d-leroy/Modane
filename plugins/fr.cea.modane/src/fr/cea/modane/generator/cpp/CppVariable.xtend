@@ -62,7 +62,7 @@ class CppVarReference  extends CppVariable
 		d  = direction
 	}
 
-	override getName() { v.variable.name.separateWith('_') }
+	override getName() { v.variable.name.separateWithDefault }
 	override getDescription() { v.variable.fromDescription }
 	override getDirection() { d }
 	override isComponent() {

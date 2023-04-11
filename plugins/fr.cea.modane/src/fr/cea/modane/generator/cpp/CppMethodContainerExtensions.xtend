@@ -190,10 +190,8 @@ class CppMethodContainerExtensions
 	private static def getBaseClassContent(CppMethodContainer it, boolean profAccInstrumentation, boolean sciHookInstrumentation)
 	'''
 		/*!
-		 * \brief «modaneElement.eClass.name» «modaneElement.name» : classe de base.
-		 «FOR l : modaneElement.fromDescription»
-		 «l»
-		 «ENDFOR»
+		 * \brief «modaneElement.eClass.name» «modaneElement.name» : classe de base. 
+		 * «FOR l : modaneElement.fromDescription SEPARATOR '\n'»«l»«ENDFOR»
 		 */
 		template<class T>
 		class «baseClassName»
@@ -274,11 +272,9 @@ class CppMethodContainerExtensions
 		  «FOR m : methodsToOverwrite» «/* Ne pas utiliser 'SEPARATOR '\n' car il y a des espaces en trop...*/»
 		  /*!
 		   «IF m.needDotGraph»«m.dotGraph»«ENDIF»
-		   «FOR l : m.description»
-		   «l»
-		   «ENDFOR»
+		   «FOR l : m.description SEPARATOR '\n'»«l»«ENDFOR»
 		   Cette méthode construit les variables et appelle «developerClassName»::«m.name».
-		   */
+		  */
 		  «m.getBaseClassBody(debugVar, profAccInstrumentation, sciHookInstrumentation)»
 
 		  «ENDFOR»
@@ -316,9 +312,7 @@ class CppMethodContainerExtensions
 	'''
 		/*!
 		 * \brief «modaneElement.eClass.name» «modaneElement.name» : implémentation
-		 «FOR l : modaneElement.fromDescription»
-		 «l»
-		 «ENDFOR»
+		 * «FOR l : modaneElement.fromDescription SEPARATOR '\n'»«l»«ENDFOR»
 		 */
 		class «developerClassName»
 		: public «baseClassName»<«developerClassName»>

@@ -32,9 +32,7 @@ class EnumerationExtensions
 	'''
 		/*!
 		 * \brief Classe représentant l'énumération «name»
-		 «FOR l : fromDescription»
-		 * «l»
-		 «ENDFOR»
+		 * «FOR l : fromDescription SEPARATOR '\n'»«l»«ENDFOR»
 		 */
 		enum class «name»
 		{

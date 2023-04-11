@@ -9,17 +9,16 @@
  *******************************************************************************/
 package fr.cea.modane.generator.cmake
 
-import java.util.Collection
 import org.eclipse.xtext.generator.IFileSystemAccess
 
 class CMakeGenerator
 {
-	def generate(IFileSystemAccess fsa, String packageFullyQualifiedName, Collection<String> subPackageShortNames, ModelInfo modelInfo)
+	def generate(IFileSystemAccess fsa, String packageFullyQualifiedName, ModelInfo modelInfo)
 	{
-		fsa.generateFile('''«packageFullyQualifiedName.path»/__«packageFullyQualifiedName.shortName».cmake''', getContent(packageFullyQualifiedName, subPackageShortNames, modelInfo))
+		fsa.generateFile('''«packageFullyQualifiedName.path»/__«packageFullyQualifiedName.shortName».cmake''', getContent(packageFullyQualifiedName, modelInfo))
 	}
 
-	private def getContent(String packageFullyQualifiedName, Collection<String> subPackageShortNames, ModelInfo modelInfo)
+	private def getContent(String packageFullyQualifiedName, ModelInfo modelInfo)
 	'''
 		#
 		# Generated file - Do not overwrite

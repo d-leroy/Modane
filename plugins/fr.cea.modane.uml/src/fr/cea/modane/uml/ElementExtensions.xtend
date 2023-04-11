@@ -46,7 +46,7 @@ class ElementExtensions
 		{
 			namefr = namefr.replace(' ', '_')
 			namefr = namefr.replace('-', '_')
-			namefr = namefr.separateWith('_')
+			namefr = namefr.separateWithDefault
 		}
 		return namefr
 	}

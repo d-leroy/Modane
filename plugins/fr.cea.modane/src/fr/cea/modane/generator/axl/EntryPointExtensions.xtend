@@ -21,7 +21,7 @@ class EntryPointExtensions
 		<entry-point 
 		method-name="«name»" 
 		name="«name.toFirstUpper»"
-		where="«location.literal.separateWith('-')»"
+		where="«location.literal.replace('@', '').separateWith('-')»"
 		property="«autoLoad.propertyString»"/>
 	'''
 	

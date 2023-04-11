@@ -49,13 +49,13 @@ class CppMethodExtensions
 		«IF allVars.size > 0»«'\n'»«ENDIF»
 		  «FOR v : allVars»
 		  /*!
-		   * [«v.direction.literal»] «v.name»
-		   «IF v.description !== null»
-		   «FOR l : v.description»
-		   * «l»
-		   «ENDFOR»
-		   «ENDIF»
-		   */
+		  [«v.direction.literal»] «v.name»
+		  «IF v.description !== null»
+		  «FOR l : v.description»
+		  «l»
+		  «ENDFOR»
+		  «ENDIF»
+		  */
 		  «v.argTypeName» «v.fieldName»;
 		  «ENDFOR»
 		};
@@ -74,7 +74,7 @@ class CppMethodExtensions
 		val l = new ArrayList<String>
 
 		if (itemTypeSpecialized) l += 'const ItemGroup& items'
-		else if (hasSupport) l += 'const ' + support.literal + 'VectorView items'
+		else if (hasSupport) l += 'const ' + support.getName + 'VectorView items'
 		l += argDefinitions.argsWithDefaultValue
 		return l
 	}
@@ -266,36 +266,34 @@ class CppMethodExtensions
 			  «ENDIF»
 			  «IF itemTypeSpecialized»
 			  T* t = static_cast<T*>(this);
-			  «itemTypeSpecializedClassName»<T> fclass(«getArgSequence('t').join(', ')»);
-			  «wrapMethodContentWithSciHookInstrumentation(sciHookInstrumentation, methodIfDefContent, baseEventName, '''items.applyOperation(&fclass);''')»
+			  «itemTypeSpecializedClassName»<T> fclass(«getArgSequence('t').join(', ')»); 
+			  «generateMethodContent(sciHookInstrumentation, methodIfDefContent, baseEventName, '''items.applyOperation(&fclass);''')»
 			  «ELSEIF hasParallelLoops»
 			  T* t = static_cast<T*>(this);
-			  «wrapMethodContentWithSciHookInstrumentation(sciHookInstrumentation, methodIfDefContent, baseEventName,
+			  «generateMethodContent(sciHookInstrumentation, methodIfDefContent, baseEventName,
 			'''
-			  arcaneParallelForeach(items, [&](«support.literal»VectorView sub_items)
+			  arcaneParallelForeach(items, [&](«support.getName»VectorView sub_items)
 			  {
-			    ENUMERATE_«support.literal.toUpperCase» (iitem, sub_items) {
-			      const «support.literal» item = *iitem;
+			    ENUMERATE_«support.getName.toUpperCase» (iitem, sub_items) {
+			      const «support.getName» item = *iitem;
 			      t->«name»(«getArgSequence('item').join(', ')»);
 			    }
 			  });
 			''')»
 			  «ELSEIF hasSupport»
 			  T* t = static_cast<T*>(this);
-			  «wrapMethodContentWithSciHookInstrumentation(sciHookInstrumentation, methodIfDefContent, baseEventName,
+			  «generateMethodContent(sciHookInstrumentation, methodIfDefContent, baseEventName,
 			'''
-			  ENUMERATE_«support.literal.toUpperCase» (iitem, items) {
-			    const «support.literal» item = *iitem;
+			  ENUMERATE_«support.getName.toUpperCase» (iitem, items) {
+			    const «support.getName» item = *iitem;
 			    t->«name»(«getArgSequence('item').join(', ')»);
 			  }
 			''')»
 			  «ELSE»
 			  «IF returnType !== null»
-			  «returnTypeName» result;
-			  «wrapMethodContentWithSciHookInstrumentation(sciHookInstrumentation, methodIfDefContent, baseEventName,'''result = this->«name»(«argSequence.join(', ')»);''')»
-			  return result;
+			  «generateMethodContent(sciHookInstrumentation, methodIfDefContent, baseEventName,'''return this->«name»(«argSequence.join(', ')»);''')»
 			  «ELSE»
-			  «wrapMethodContentWithSciHookInstrumentation(sciHookInstrumentation, methodIfDefContent, baseEventName,'''this->«name»(«argSequence.join(', ')»);''')»
+			  «generateMethodContent(sciHookInstrumentation, methodIfDefContent, baseEventName,'''this->«name»(«argSequence.join(', ')»);''')»
 			  «ENDIF»
 			  «ENDIF»
 			  «IF profAccInstrumentation && profAcc»
@@ -306,9 +304,8 @@ class CppMethodExtensions
 			}
 		'''
 	}
-	
 
-	static def wrapMethodContentWithSciHookInstrumentation(boolean instrument, String ifDefContent, String baseEventName, String content)
+	static def generateMethodContent(boolean instrument, String ifDefContent, String baseEventName, String content)
 	'''
 		«IF instrument»
 		#if «ifDefContent»
@@ -316,10 +313,10 @@ class CppMethodExtensions
 		«content»
 		SciHook::trigger(«baseEventName»_AFTER, ctx);
 		#else
-		«ENDIF»
 		«content»
-		«IF instrument»
 		#endif
+		«ELSE»
+		«content»
 		«ENDIF»
 	'''
 
@@ -332,9 +329,9 @@ class CppMethodExtensions
 		{
 		  public:
 		    explicit «itemTypeSpecializedClassName»(«getDeveloperArgs(true, 'T* srv').join(', ')»)
-		    «FOR a : getConstructorInitializationArgs('m_srv(srv)') BEFORE ': ' SEPARATOR '\n, '»«a»«ENDFOR»
-		    {
-		    }
+			«FOR a : getConstructorInitializationArgs('m_srv(srv)') BEFORE ': ' SEPARATOR '\n, '»«a»«ENDFOR»
+			{
+			}
 		    ~«itemTypeSpecializedClassName»() {};
 
 		  public:
@@ -375,7 +372,7 @@ class CppMethodExtensions
 		val l = new ArrayList<String>
 
 		if (itemTypeSpecialized) l += 'const ItemGroup& items'
-		else if (hasSupport) l += 'const ' + support.literal + 'VectorView items'
+		else if (hasSupport) l += 'const ' + support.getName + 'VectorView items'
 		l += allArgs.argsWithDefaultValue
 		return l
 	}
@@ -385,7 +382,7 @@ class CppMethodExtensions
 	{
 		val l = new ArrayList<String>
 		if (!prefix.nullOrEmpty) l+= prefix
-		if (hasSupport) l += 'const ' + support.literal + ' ' + support.literal.toLowerCase
+		if (hasSupport) l += 'const ' + support.getName + ' ' + support.getName.toLowerCase
 		if (GenerationContext::Current.generationOptions.variableAsArgs) l += varClassName + '& vars'
 		if (withDefaultValue) l += argDefinitions.argsWithDefaultValue
 		else argDefinitions.forEach[x | l += x.typeName + ' ' + x.name]

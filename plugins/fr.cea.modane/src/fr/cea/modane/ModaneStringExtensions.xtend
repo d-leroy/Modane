@@ -32,7 +32,7 @@ class ModaneStringExtensions
 			replace('_', separator).toLowerCase
 		else 
 			// chaine de la forme monNom
-			Character::toLowerCase(charAt(0)) + toCharArray.tail.map[c | if (Character::isUpperCase(c)) separator + Character::toLowerCase(c) else c  ].join
+			Character::toLowerCase(charAt(0)) + toCharArray.tail.map[c | if (Character::isUpperCase(c)) separator + Character::toLowerCase(c) else c].join
 	}
 
 	static def separateWithDefault(String it) { separateWith(LowerCaseSeparator) }
@@ -54,12 +54,7 @@ class ModaneStringExtensions
 	private static def List<String> formatDescription(Comment comment)
 	{
 		if (comment.isNullOrEmpty) return #[]
-		else {
-			val result = comment.comment.replaceFirst('/\\*!', ' * ')
-				.replaceFirst('\\*/', '').split('\n')
-				.map[l|l.replaceFirst('\\*', '').strip]
-			return result
-		}
+		else return comment.comment.split('\n')
 	}
 
 	static dispatch def fromDescription(EntryPoint element) { formatDescription(element.description) }

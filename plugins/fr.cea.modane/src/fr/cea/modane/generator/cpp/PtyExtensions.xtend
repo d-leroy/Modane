@@ -108,12 +108,8 @@ class PtyExtensions extends fr.cea.modane.PtyExtensions
 
 	static def getAbstractGetterContent(Pty it)
 	'''
-		«IF description !== null »
-		/*!
-		 «FOR l : fromDescription»
-		 * «l»
-		 «ENDFOR»
-		 */
+		«IF description !== null»
+		/*! «FOR l : fromDescription SEPARATOR '\n'»«l»«ENDFOR» */
 		«ENDIF»
 		virtual «returnTypeName» «getterName»() = 0;
 	'''

@@ -42,6 +42,7 @@ import fr.cea.modane.modane.VarReference
 import fr.cea.modane.modane.Variable
 import java.util.ArrayList
 import java.util.List
+import java.util.Set
 import org.eclipse.emf.common.util.URI
 import org.eclipse.emf.ecore.resource.ResourceSet
 import org.eclipse.emf.ecore.util.EcoreUtil
@@ -69,7 +70,7 @@ import static extension fr.cea.modane.uml.ModelMetricsExtensions.*
 class UmlToModane
 {
 	@Inject ResourceSet resourceSet
-	@Inject ModaneGeneratorMessageDispatcher dispatcher
+	@Inject ModaneGeneratorMessageDispatcher messageDispatcher
 
 	Profile profile
 	UserCategory defaultCategory
@@ -79,6 +80,12 @@ class UmlToModane
 	extension InterfaceExtensions ie
 	extension OperationExtensions oe
 	extension EnumerationLiteralExtensions ele
+	
+	Set<URI> resourceURICache
+	
+	def setResourceURICache(Set<URI> cache) {
+		resourceURICache = cache
+	}
 
 	def static createInstance()
 	{
@@ -89,6 +96,23 @@ class UmlToModane
 	def readModel(URI umlFileURI)
 	{
 		UmlUtils::readUmlModel(umlFileURI)
+	}
+	
+	def getMessageDispatcher()
+	{
+		messageDispatcher
+	}
+	
+	def generate(Model umlModel, String absoluteOutputPath, String packagePrefix, boolean writeModaneFiles, boolean obfuscate)
+	{
+		val startTime = System.currentTimeMillis
+
+		messageDispatcher.post(MessageType.Exec, "Starting UML to Modane model transformation")
+		val resources = createModaneModelsResources(umlModel, absoluteOutputPath, packagePrefix, writeModaneFiles, obfuscate)
+		val afterConvertionTime = System.currentTimeMillis
+		messageDispatcher.post(MessageType.Exec, "UML to Modane model transformation ended in " + (afterConvertionTime-startTime)/1000.0 + "s")
+		
+		return resources
 	}
 
 	def List<ModaneModel> createModaneModels(Model umlModel, String packagePrefix)
@@ -113,11 +137,12 @@ class UmlToModane
 		models += ModaneFactory::eINSTANCE.createModaneModel => [name = "CategoriesModel" elements += defaultCategory]
 
 		models += umlModel.toModaneModel(models)
-		dispatcher.post(MessageType.Exec, '    ' + umlModel.usedUmlEclass.size + " UML classes and " + models.totalNbElements + " model elements")
-		dispatcher.post(MessageType.Exec, '    List of models: ')
+		models.forEach[m|m.eAllContents.filter(fr.cea.modane.modane.NamedElement).forEach[e|e.name = e.name.strip]]
+		messageDispatcher.post(MessageType.Exec, '    ' + umlModel.usedUmlEclass.size + " UML classes and " + models.totalNbElements + " model elements")
+		messageDispatcher.post(MessageType.Exec, '    List of models: ')
 		for (m : models)
 			if (!m.name.nullOrEmpty)
-				dispatcher.post(MessageType.Exec, '        - ' + m.name)
+				messageDispatcher.post(MessageType.Exec, '        - ' + m.name)
 
 		return models
 	}
@@ -130,7 +155,7 @@ class UmlToModane
 	 * Le outputPath est absolu pour pouvoir fonctionner hors d'Eclipse.
 	 * On va donc construire une URI de type file.
 	 */
-	def createModaneModelsResources(Model umlModel, String absoluteOuputPath, String packagePrefix, boolean writeFiles)
+	def createModaneModelsResources(Model umlModel, String absoluteOuputPath, String packagePrefix, boolean writeFiles, boolean obfuscate)
 	{
 		val models = createModaneModels(umlModel, packagePrefix)
 		models.forEach[x | x.addResource(absoluteOuputPath, Utils.FileExtension, resourceSet)]
@@ -140,9 +165,12 @@ class UmlToModane
 		{
 			for (r : resourceSet.resources)
 			{
-				r.allContents.filter(NamedElement).forEach[e|e.name = e.name.trim]
-				dispatcher.post(MessageType.Exec, 'Writing resource: ' + r.URI.toString)
-				r.save(saveOptions)
+				val uri = r.URI.toString
+				if (!resourceURICache.exists[resURI|resURI.toString == uri]) {
+					r.allContents.filter(NamedElement).forEach[e|e.name = e.name.trim]
+					messageDispatcher.post(MessageType.Exec, 'Writing resource: ' + r.URI.toString)
+					r.save(saveOptions)
+				}
 			}
 		}
 
@@ -173,7 +201,7 @@ class UmlToModane
 	private def getFileName(ModaneModel it, String fileExt)
 	{
 		if (name.nullOrEmpty) 'default' + fileExt
-		else name + fileExt
+		else name + '/' + name + fileExt
 	}
 
 	private def ModaneModel create ModaneFactory::eINSTANCE.createModaneModel toModaneModel(Package p, List<ModaneModel> models)
@@ -200,7 +228,8 @@ class UmlToModane
 
 	private def Variable create ModaneFactory::eINSTANCE.createVariable toVariable(Class c)
 	{
-		name = c.name
+		name = c.name.separateWithDefault
+		axlName = c.name
 		description = c.description
 		dump = c.varDump
 		executionDepend = c.varExecDep
@@ -236,7 +265,7 @@ class UmlToModane
 
 	private def Pty create ModaneFactory::eINSTANCE.createPty toPty(Property p)
 	{
-		name = p.name.separateWith('_')
+		name = p.name.separateWithDefault
 		description = p.description
 		if (p.lowerBound == 0)
 		{
@@ -256,7 +285,7 @@ class UmlToModane
 
 	private def ArgDefinition create ModaneFactory::eINSTANCE.createArgDefinition toArgument(Parameter p)
 	{
-		name = p.name.separateWith('_')
+		name = p.name.separateWithDefault
 		multiple = (p.upperBound == -1 )
 		type = p.type.toArgType
 		if (p.defaultValue !== null) defaultValue = p.defaultValue.stringValue.replaceAll('::','.')
@@ -423,7 +452,7 @@ class UmlToModane
 	private def VarDefinition toVarDefinition(Class c, boolean isIn, boolean isOut)
 	{
 		val it = ModaneFactory::eINSTANCE.createVarDefinition
-		name = c.name.separateWith('_')
+		name = c.name.separateWithDefault
 		multiplicity = c.varMult
 		supports += c.varSupport
 		type = c.varType

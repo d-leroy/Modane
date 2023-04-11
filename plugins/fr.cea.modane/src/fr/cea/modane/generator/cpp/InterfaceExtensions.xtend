@@ -20,7 +20,6 @@ import static extension fr.cea.modane.ModaneElementExtensions.*
 import static extension fr.cea.modane.ModaneStringExtensions.*
 import static extension fr.cea.modane.generator.cpp.CppMethodContainerExtensions.*
 import static extension fr.cea.modane.generator.cpp.CppMethodExtensions.*
-import static extension fr.cea.modane.generator.cpp.ItemTypeExtensions.*
 import static extension fr.cea.modane.generator.cpp.PtyExtensions.*
 import static extension fr.cea.modane.generator.cpp.PtyOrArgTypeExtensions.*
 import static extension fr.cea.modane.generator.cpp.ReferenceableExtensions.*
@@ -46,9 +45,7 @@ class InterfaceExtensions extends fr.cea.modane.InterfaceExtensions
 	'''
 		/*!
 		 * \brief Interface «name»
-		 «FOR l : fromDescription»
-		 * «l»
-		 «ENDFOR»
+		 * «FOR l : fromDescription SEPARATOR '\n'»«l»«ENDFOR»
 		 */
 		class «referencedName»
 		«FOR parent : parents BEFORE ': ' SEPARATOR ', '»
@@ -70,19 +67,17 @@ class InterfaceExtensions extends fr.cea.modane.InterfaceExtensions
 		  «FOR f : functions»
 		  «IF hasRealizations || !f.description.nullOrEmpty»
 		  /*!
-		   «IF hasRealizations»
-		   * Cette méthode est implémentée dans :
-		   «FOR s: allServiceRealisations»
-		   * \li «(new ServiceCppMethodContainer(s)).baseClassName»::«f.name»
-		   «ENDFOR»
-		   «FOR s: allModuleRealisations»
-		   * \li «(new ModuleCppMethodContainer(s)).baseClassName»::«f.name»
-		   «ENDFOR»
-		   «ENDIF»
-		   «FOR l : fromDescription»
-		   * «l»
-		   «ENDFOR»
-		   */
+		  «IF hasRealizations»
+		  Cette méthode est implémentée dans :
+		  «FOR s: allServiceRealisations»
+		  \li «(new ServiceCppMethodContainer(s)).baseClassName»::«f.name»
+		  «ENDFOR»
+		  «FOR s: allModuleRealisations»
+		  \li «(new ModuleCppMethodContainer(s)).baseClassName»::«f.name»
+		  «ENDFOR»
+		  «ENDIF»
+		  «FOR l : f.fromDescription SEPARATOR '\n'»«l»«ENDFOR»
+		  */
 		  «ENDIF»
 		  virtual «new FunctionCppMethod(f,new InterfaceCppMethodContainer(it), name).callerSignature» = 0;
 		  «ENDFOR»

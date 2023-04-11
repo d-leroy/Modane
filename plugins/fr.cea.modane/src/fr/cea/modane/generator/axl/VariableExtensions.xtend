@@ -13,15 +13,19 @@ import com.google.inject.Inject
 import fr.cea.modane.modane.ItemType
 import fr.cea.modane.modane.Variable
 
-import static extension fr.cea.modane.ModaneStringExtensions.*
-
 class VariableExtensions
 {
 	@Inject extension DescriptionUtils
 
+//	def getContent(Variable it)
+//	'''
+//		<variable field-name="«name.separateWithDefault»" name="«name»" data-type="«typeName»" item-kind="«itemKindName»"«IF family !== null» family-name="«family.name»"«ENDIF» dim="«dim»" dump="«isDump»" need-sync="«isNeedSync»" restore="«isRestore»" execution-depend="«isExecutionDepend»"«componentExtension»>
+//			«description.formatDescription»
+//		</variable>
+//	'''
 	def getContent(Variable it)
 	'''
-		<variable field-name="«name.separateWith('_')»" name="«name»" data-type="«typeName»" item-kind="«itemKindName»"«IF family !== null» family-name="«family.name»"«ENDIF» dim="«dim»" dump="«isDump»" need-sync="«isNeedSync»" restore="«isRestore»" execution-depend="«isExecutionDepend»"«componentExtension»>
+		<variable field-name="«name»" name="«axlName»" data-type="«typeName»" item-kind="«itemKindName»"«IF family !== null» family-name="«family.name»"«ENDIF» dim="«dim»" dump="«isDump»" need-sync="«isNeedSync»" restore="«isRestore»" execution-depend="«isExecutionDepend»"«componentExtension»>
 			«description.formatDescription»
 		</variable>
 	'''
@@ -37,7 +41,7 @@ class VariableExtensions
 		else
 		{
 			val firstSupport = supports.get(0)
-			switch firstSupport
+			switch firstSupport.type
 			{
 				case ItemType::MAT_CELL : 'cell'
 				case ItemType::ENV_CELL : 'cell'
@@ -57,7 +61,7 @@ class VariableExtensions
 		else
 		{
 			val firstSupport = supports.get(0)
-			switch firstSupport
+			switch firstSupport.type
 			{
 				case ItemType::MAT_CELL : ' material="true"'
 				case ItemType::ENV_CELL : ' environment="true"'

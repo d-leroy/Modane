@@ -6,10 +6,11 @@ import org.eclipse.xtext.nodemodel.INode;
 class DOX_COMMENTValueConverter extends AbstractLexerBasedConverter<String>
 {
 	override String toValue(String string, INode node) throws ValueConverterException {
-		val result = string.replaceFirst('/\\*!', ' * ')
-				.replaceFirst('\\*/', '').split('\n')
-				.map[l|l.replaceFirst('\\*', '').strip]
-				.join('\n').strip
+		val lines = string.split('\n')
+		val contentLines = lines.subList(1, lines.length - 1)
+		val result = contentLines
+				.map[l|l.replaceFirst('\\s*\\* ', '')]
+				.join('\n')
 		return result
 	}
 	
@@ -18,9 +19,7 @@ class DOX_COMMENTValueConverter extends AbstractLexerBasedConverter<String>
 		{
 			'''
 				/*!
-				 «FOR l : value.split('\n')»
-				 * «l»
-				 «ENDFOR»
+				 «FOR l : value.split('\n') SEPARATOR '\n'»* «l»«ENDFOR»
 				 */
 			'''
 		} else {

@@ -16,6 +16,7 @@ import fr.cea.modane.ui.ModaneConsoleFactory
 import fr.cea.modane.ui.ModaneUiUtils
 import fr.cea.modane.ui.dialogs.GenerateTitleDialog
 import fr.cea.modane.ui.dialogs.GenerateTitleDialogOptions
+import fr.cea.modane.uml.ModaneToCpp
 import fr.cea.modane.uml.PackageExtensions
 import fr.cea.modane.uml.UmlToCpp
 import java.io.FileNotFoundException
@@ -23,6 +24,7 @@ import org.eclipse.core.commands.AbstractHandler
 import org.eclipse.core.commands.ExecutionEvent
 import org.eclipse.core.commands.ExecutionException
 import org.eclipse.core.resources.IFile
+import org.eclipse.core.resources.IFolder
 import org.eclipse.emf.common.util.URI
 import org.eclipse.jface.viewers.TreeSelection
 import org.eclipse.jface.window.Window
@@ -30,6 +32,7 @@ import org.eclipse.swt.SWT
 import org.eclipse.swt.widgets.Shell
 import org.eclipse.ui.handlers.HandlerUtil
 import org.eclipse.uml2.uml.Model
+import fr.cea.modane.uml.ModaneModelReader
 
 class GenerateHandler extends AbstractHandler
 {
@@ -45,7 +48,10 @@ class GenerateHandler extends AbstractHandler
 		if (shell !== null && selection !== null && selection instanceof TreeSelection)
 		{
 			val elt = (selection as TreeSelection).firstElement
-			if (elt !== null && elt instanceof IFile) execute(elt as IFile, shell)
+			if (elt !== null) {
+				if (elt instanceof IFile) execute(elt as IFile, shell)
+				else if (elt instanceof IFolder) execute(elt as IFolder, shell)
+			}
 		}
 		return selection
 	}
@@ -124,9 +130,87 @@ class GenerateHandler extends AbstractHandler
 			]).start
 		}
 	}
+	
+	private def gatherModaneFiles(IFolder rootFolder)
+	{
+		val result = newArrayList
+		rootFolder.accept[r|
+			if (r instanceof IFile && r.fileExtension == 'm') {
+				result.add(r.fullPath.toString)
+			}
+			return true
+		]
+		return result
+	}
+	
+	private def execute(IFolder rootFolder, Shell shell)
+	{
+		consoleFactory.openConsole
+		consoleFactory.clearAndActivateConsole
 
-	private def getPropertiesFileUri(IFile modelFile)
+		val modaneFiles = gatherModaneFiles(rootFolder)
+		val modaneModelReader = ModaneModelReader::createInstance
+		val resourcesToGenerate = newArrayList
+		val umlToCpp = ModaneToCpp::createInstance
+		umlToCpp.messageDispatcher.traceListeners += [type, msg | consoleFactory.printConsole(type, msg)]
+		consoleFactory.printConsole(MessageType.Start, "Loading Modane files under " + rootFolder.name)
+		shell.display.syncExec([shell.cursor = shell.display.getSystemCursor(SWT.CURSOR_WAIT)])
+		for (f : modaneFiles) {
+			try {
+				resourcesToGenerate.add(modaneModelReader.readModel(URI.createFileURI(f)).eResource())
+			} catch (Exception e) {
+				shell.display.syncExec([shell.cursor = null])
+				consoleFactory.printConsole(MessageType.Error, "Modane file cannot be loaded: " + f)
+				consoleFactory.printConsole(MessageType.Error, e.message)
+				consoleFactory.printConsole(MessageType.Error, Utils.getStackTrace(e))
+				return
+			}
+		}
+		shell.display.syncExec([shell.cursor = null])
+		consoleFactory.printConsole(MessageType.End, "Modane files under " + rootFolder.name + " loaded")
+		
+		if (!resourcesToGenerate.empty) {
+			// lecture des options pour initialiser la boite de dialogue
+			val options = new GenerateTitleDialogOptions
+			try {
+				options.load(rootFolder.propertiesFileUri)
+			} catch (FileNotFoundException e) {
+				// Pas d'options sauvegardées. On met le projet par défaut
+				options.outputDir = rootFolder.project.locationURI.path
+			}
+			// affichage de la boite de dialogue
+			val dialog = new GenerateTitleDialog(shell, options, #[])
+			if (dialog.open == Window::OK) {
+				// les options ont peut-être changé => sauvegarde
+				options.save(rootFolder.propertiesFileUri)
+				rootFolder.refreshLocal(1, null)
+			
+				new Thread([
+					try {
+						// lancement de la génération
+						consoleFactory.printConsole(MessageType.Start, "Starting generation process for: " + rootFolder.name)
+						umlToCpp.generate(resourcesToGenerate, options.outputDir, "", "", false,
+								options.sciHookInstrumentation, options.writeCmakeListsFiles, options.writeCmakeFiles);
+						consoleFactory.printConsole(MessageType.End, "Generation process ended successfully for " + rootFolder.name)
+						ModaneUiUtils::refreshResourceDir(rootFolder, options.outputDir)
+					} catch (Exception e) {
+						consoleFactory.printConsole(MessageType.Error, "Generation process failed for: " + rootFolder.name)
+						consoleFactory.printConsole(MessageType.Error, e.message)
+						consoleFactory.printConsole(MessageType.Error, Utils::getStackTrace(e))
+						return
+					}
+				]).start
+			}
+		}
+	}
+
+	private def dispatch getPropertiesFileUri(IFile modelFile)
 	{
 		modelFile.locationURI.path.replace(".uml", ".properties")
+	}
+
+	private def dispatch getPropertiesFileUri(IFolder rootFolder)
+	{
+		rootFolder.locationURI.path + '/' + rootFolder.name + ".properties"
 	}
 }

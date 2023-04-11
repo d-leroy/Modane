@@ -66,7 +66,7 @@ class PtyExtensions
 	'''
 		<extended 
 			name="«name.separateWith('-')»"
-			type="«t.type.literal»"
+			type="«t.type.getName»"
 			«IF defaultValue !== null» default="«defaultValue»"«ENDIF»
 			«arcaneBound»>
 				«idBlock»
@@ -77,7 +77,7 @@ class PtyExtensions
 	'''
 		<extended 
 			name="«name.separateWith('-')»"
-			type="«t.type.literal»"
+			type="«t.type.getName»"
 			«IF defaultValue !== null» default="«defaultValue»"«ENDIF»
 			«arcaneBound»>
 				«idBlock»

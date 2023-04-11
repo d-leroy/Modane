@@ -13,7 +13,9 @@ import com.google.inject.Inject
 import fr.cea.modane.ModaneStandaloneSetupGenerated
 import fr.cea.modane.generator.ModaneGeneratorMessageDispatcher.MessageType
 import fr.cea.modane.generator.StandaloneGenerator
+import java.util.List
 import org.eclipse.emf.common.util.URI
+import org.eclipse.emf.ecore.resource.Resource
 import org.eclipse.uml2.uml.Model
 
 /**
@@ -48,7 +50,7 @@ class UmlToCpp
 		val startTime = System.currentTimeMillis
 
 		messageDispatcher.post(MessageType.Exec, "Starting UML to Modane model transformation")
-		val resources = umlToModane.createModaneModelsResources(umlModel, absoluteOutputPath, packagePrefix, writeModaneFiles)
+		val resources = umlToModane.createModaneModelsResources(umlModel, absoluteOutputPath, packagePrefix, writeModaneFiles, false)
 		val afterConvertionTime = System.currentTimeMillis
 		messageDispatcher.post(MessageType.Exec, "UML to Modane model transformation ended in " + (afterConvertionTime-startTime)/1000.0 + "s")
 
@@ -56,7 +58,16 @@ class UmlToCpp
 		generator.generate(resources, absoluteOutputPath, packageToGenerate, profAccInstrumentation, sciHookInstrumentation, generateCMakeLists, generateCMake)
 		val afterGenerationTime = System.currentTimeMillis
 		messageDispatcher.post(MessageType.Exec, "Code generation ended in " + (afterGenerationTime-afterConvertionTime)/1000.0 + "s")
+	}
 
-		messageDispatcher.post(MessageType.Exec, "Total time: " + (afterGenerationTime-startTime)/1000.0 + "s");
+	def generate(List<Resource> resources, String absoluteOutputPath, String packagePrefix, String packageToGenerate,
+			boolean profAccInstrumentation, boolean sciHookInstrumentation, boolean generateCMakeLists, boolean generateCMake, boolean writeModaneFiles)
+	{
+		val startTime = System.currentTimeMillis
+
+		messageDispatcher.post(MessageType.Exec, "Starting code generation")
+		generator.generate(resources, absoluteOutputPath, packageToGenerate, profAccInstrumentation, sciHookInstrumentation, generateCMakeLists, generateCMake)
+		val afterGenerationTime = System.currentTimeMillis
+		messageDispatcher.post(MessageType.Exec, "Code generation ended in " + (afterGenerationTime-startTime)/1000.0 + "s")
 	}
 }
