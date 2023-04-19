@@ -11,7 +11,10 @@ package fr.cea.modane.generator.axl
 
 import com.google.inject.Inject
 import fr.cea.modane.modane.ItemType
+import fr.cea.modane.modane.SimpleType
 import fr.cea.modane.modane.Variable
+
+import static extension fr.cea.modane.generator.VariableExtensions.*
 
 class VariableExtensions
 {
@@ -30,7 +33,14 @@ class VariableExtensions
 		</variable>
 	'''
 
-	private def getTypeName(Variable it) { type.getName.toLowerCase }
+	private def getTypeName(Variable it)
+	{
+		switch (type.typeName)
+		{
+			case SimpleType::BOOLEAN.getName: 'bool'
+			default: type.typeName.toLowerCase
+		}
+	}
 
 	private def getItemKindName(Variable it)
 	{
@@ -50,7 +60,17 @@ class VariableExtensions
 		}
 	}
 
-	private def getDim(Variable it) { multiplicity === null ? 0 : multiplicity.type.ordinal + 1 }
+	private def getDim(Variable it) {
+		switch (multiplicity)
+		{
+			case 'Scalar':
+				return 0
+			case 'Array':
+				return 1
+			case 'Array2':
+				return 2
+		}
+	}
 	
 	private def getComponentExtension(Variable it)
 	{

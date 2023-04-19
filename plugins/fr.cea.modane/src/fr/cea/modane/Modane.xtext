@@ -34,7 +34,7 @@ QualifiedName:
 
 Variable:
 	description=Comment?
-	'var' type=SimpleType (multiplicity=VariableMultiplicity)? name=ID '{' (supports+=Item (',' supports+=Item)?)? '}'
+	'var' type=SimpleType name=ID '{' (supports+=Item (',' supports+=Item)?)? '}'
 	'@axlname' '('axlName=STRING')' dump?=DUMP? restore?=RESTORE? executionDepend?=EXEC_DEP? needSync?=SYNC?
 	('family' family=[ItemFamily|QualifiedName])? ';';
 
@@ -53,7 +53,7 @@ EnumerationLiteral:
 
 Legacy:
 	description=Comment?
-	'legacy' name=ID 'file' originFile=STRING ('namespace' originNamespace=STRING)?;
+	'legacy' name=ID 'file' originFile=STRING ('namespace' originNamespace=STRING)?';';
 
 // ----------------------------------------------------------------------------------------------------------------- //
 
@@ -87,7 +87,7 @@ Function:
 	'def' (const?='const')?
 	('void'|(type=PtyOrArgType (multiple?='*')?))  name=ID
 	'(' (args+=Arg (',' args+=Arg)*)? ')'
-	 ('on' support=FunctionItem)? (sequential?='sequential')?
+	 ('on' support=FunctionItem)? (sequential?='sequentially')?
 	 ('in' inVars+=VarReference (',' inVars+=VarReference)*)?
 	 ('out' outVars+=VarReference (',' outVars+=VarReference)*)?
 	 ('inout' inOutVars+=VarReference (',' inOutVars+=VarReference)*)?
@@ -100,7 +100,7 @@ ArgDefinition:
 	direction=Direction type=PtyOrArgType (multiple?='*')? name=ID ('=' defaultValue=STRING)?;
 
 VarDefinition:
-	direction=Direction type=SimpleType (multiplicity=VariableMultiplicity)? name=ID '{' (supports+=Item (',' supports+=Item)?)? '}';
+	direction=Direction type=SimpleType name=ID '{' (supports+=Item (',' supports+=Item)?)? '}';
 
 VarReference:
 	variable=[Variable|QualifiedName];
@@ -195,15 +195,20 @@ FunctionItem:
 ItemGroup:
 	type=ItemGroupType;
 
-VariableMultiplicity:
-	type=VariableMultiplicityType;
-
 Reference:
 	target=[Referenceable|QualifiedName];
 
-enum SimpleType: 
-	bool='bool' | String='string'| Integer='int' | Int32='int32' | Int64='int64' | Real='real' |
-	Real2='real[2]' | Real2x2='real[2,2]' | Real3='real[3]' | Real3x3='real[3,3]';
+enum SimpleType:
+	Boolean='bool' | ArrayBoolean='bool[*]' | Array2Boolean='bool[*,*]' |
+	String='string'| ArrayString='string[*]' |
+	Integer='int' | ArrayInteger='int[*]' | Array2Integer='int[*,*]' |
+	Int32='int32' | ArrayInt32='int32[*]' | Array2Int32='int32[*,*]' |
+	Int64='int64' | ArrayInt64='int64[*]' | Array2Int64='int64[*,*]' |
+	Real='real' | ArrayReal='real[*]' | Array2Real='real[*,*]' |
+	Real2='real[2]' | ArrayReal2='real[*,2]' | Array2Real2='real[*,*,2]' |
+	Real2x2='real[2,2]' | ArrayReal2x2='real[*,2,2]' | Array2Real2x2='real[*,*,2,2]' |
+	Real3='real[3]' | ArrayReal3='real[*,3]' | Array2Real3='real[*,*,3]' |
+	Real3x3='real[3,3]' | ArrayReal3x3='real[*,3,3]' | Array2Real3x3='real[*,*,3,3]';
 
 enum ItemType:
 	Item='item' | Cell='cell' | Node='node' | Face='face' | Particle='particle' | MatCell='matCell' | EnvCell='envCell' | ComponentCell='componentCell' |
@@ -217,14 +222,14 @@ enum ItemGroupType:
 	NoItemGroup='noItemGroup' | ItemGroup='itemGroup' | CellGroup='cellGroup' | NodeGroup='nodeGroup' | FaceGroup='faceGroup' | ParticleGroup='particleGroup' |
 	MatCellGroup='matCellGroup' | EnvCellGroup='envCellGroup' | ComponentCellGroup='componentCellGroup' | AllEnvCellGroup='allEnvCellGroup';
 
+enum ReservedKeywords:
+	Cells='cells' | Nodes='nodes' | Faces='faces' | Sum='sum' | Legacy='legacy';
+
 enum Direction:
 	in | out | inout;
 
 enum PtyMultiplicity:
 	ZeroOne='[0..1]' | OneOne='[1..1]' | ZeroStar='[0..*]' | OneStar='[1..*]';
-
-enum VariableMultiplicityType:
-	Array='array' | Array2='array2';
 
 terminal DUMP:
 	'@dump';

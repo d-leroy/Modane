@@ -40,7 +40,6 @@ import fr.cea.modane.modane.UnitTestFunction
 import fr.cea.modane.modane.VarDefinition
 import fr.cea.modane.modane.VarReference
 import fr.cea.modane.modane.Variable
-import fr.cea.modane.modane.VariableMultiplicityType
 import java.util.ArrayList
 import org.eclipse.emf.ecore.EReference
 import org.eclipse.emf.ecore.EStructuralFeature
@@ -49,6 +48,7 @@ import org.eclipse.xtext.validation.Check
 
 import static extension fr.cea.modane.FunctionExtensions.*
 import static extension fr.cea.modane.InterfaceExtensions.*
+import static extension fr.cea.modane.generator.VariableExtensions.*
 import static extension fr.cea.modane.ModaneElementExtensions.*
 import static extension fr.cea.modane.ModaneStringExtensions.*
 import static extension fr.cea.modane.Utils.*
@@ -496,7 +496,7 @@ class ModaneValidator extends UniqueNameValidator
 				error("Variable invalide : pas de support possible avec le type String", supportLiteral)
 				return false
 			}
-			if (multiplicity !== null && multiplicity.type == VariableMultiplicityType::ARRAY2)
+			if (!type.multiplicity.nullOrEmpty && type.multiplicity == 'Array2')
 			{
 				error("Variable invalide : Array2 impossible avec le type String", multiplicityLiteral)
 				return false
@@ -521,7 +521,7 @@ class ModaneValidator extends UniqueNameValidator
 			return false
 		}
 
-		if (support !== null && multiplicity !== null && multiplicity.type == VariableMultiplicityType::ARRAY2)
+		if (support !== null && !type.multiplicity.nullOrEmpty && type.multiplicity == 'Array2')
 		{
 			error("Variable invalide : Array2 impossible avec un support", multiplicityLiteral)
 			return false

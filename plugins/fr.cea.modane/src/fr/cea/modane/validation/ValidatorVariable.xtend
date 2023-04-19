@@ -14,17 +14,16 @@ import fr.cea.modane.modane.ModanePackage
 import fr.cea.modane.modane.SimpleType
 import fr.cea.modane.modane.VarDefinition
 import fr.cea.modane.modane.Variable
-import fr.cea.modane.modane.VariableMultiplicity
 import org.eclipse.emf.ecore.EReference
 import org.eclipse.xtend.lib.annotations.Data
+import org.eclipse.emf.ecore.EAttribute
 
 interface ValidatorVariable 
 {
 	def ItemType getSupport()
-	def VariableMultiplicity getMultiplicity()
 	def SimpleType getType()
 	def EReference getSupportLiteral()
-	def EReference getMultiplicityLiteral()
+	def EAttribute getMultiplicityLiteral()
 }
 
 @Data
@@ -33,10 +32,9 @@ class VariableValidatorVariable implements ValidatorVariable
 	val Variable v
 	
 	override getSupport() { v.supports.empty ? null : v.supports.get(0).type }
-	override getMultiplicity() { v.multiplicity }	
 	override getType() { v.type }
 	override getSupportLiteral() { ModanePackage.Literals::VARIABLE__SUPPORTS }
-	override getMultiplicityLiteral() { ModanePackage.Literals::VARIABLE__MULTIPLICITY }
+	override getMultiplicityLiteral() { ModanePackage.Literals::VARIABLE__TYPE }
 }
 
 @Data
@@ -45,8 +43,7 @@ class VarDefinitionValidatorVariable implements ValidatorVariable
 	val VarDefinition v
 	
 	override getSupport() { v.supports.empty ? null : v.supports.get(0).type }
-	override getMultiplicity() { v.multiplicity }	
 	override getType() { v.type }
 	override getSupportLiteral() { ModanePackage.Literals::VAR_DEFINITION__SUPPORTS }
-	override getMultiplicityLiteral() { ModanePackage.Literals::VAR_DEFINITION__MULTIPLICITY }
+	override getMultiplicityLiteral() { ModanePackage.Literals::VAR_DEFINITION__TYPE }
 }

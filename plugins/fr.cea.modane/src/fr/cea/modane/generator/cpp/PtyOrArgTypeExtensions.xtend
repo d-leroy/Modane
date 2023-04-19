@@ -24,7 +24,12 @@ class PtyOrArgTypeExtensions
 	static def dispatch getTypeName(Reference it)	{ if (target === null) '' else target.referencedTypeName }
 	static def dispatch getTypeName(Item it)   		{ type.getName }
 	static def dispatch getTypeName(ItemGroup it)	{ type.getName }
-	static def dispatch String getTypeName(Simple it) { type.getName }
+	static def dispatch String getTypeName(Simple it) {
+		switch (type) {
+			case BOOLEAN: 'bool'
+			default: type.getName
+		}
+	}
 
 	static def dispatch isComponent(Reference it)	{ false }
 	static def dispatch isComponent(Simple it)		{ false }

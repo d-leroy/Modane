@@ -13,21 +13,25 @@ import fr.cea.modane.modane.Item
 import fr.cea.modane.modane.ItemType
 import fr.cea.modane.modane.SimpleType
 import fr.cea.modane.modane.Variable
-import fr.cea.modane.modane.VariableMultiplicity
-import fr.cea.modane.modane.VariableMultiplicityType
 import java.util.List
 
 import static extension fr.cea.modane.ModaneStringExtensions.*
+import static extension fr.cea.modane.generator.VariableExtensions.*
 
 class VariableExtensions 
 {	
 	static def getFieldName(Variable it) { 'm_' + name.separateWithDefault }
 	
-	static def getTypeName(Variable it) { getTypeName(type, supports, multiplicity) }	
+	static def getTypeName(Variable it) { getTypeName(type, supports) }
 
-	static def getTypeName(SimpleType varType, List<Item> supports, VariableMultiplicity mult) 
+	static def getTypeName(SimpleType varType, List<Item> supports) 
 	{
-		var tname = if (varType == SimpleType::BOOL) 'Byte' else varType.getName
+		val typeName = switch (varType.typeName)
+		{
+			case SimpleType::BOOLEAN.getName: 'Byte'
+			default: varType.typeName
+		}
+		
 		var result = ''
 
 		if (supports.empty) {
@@ -41,15 +45,13 @@ class VariableExtensions
 				default : result = 'Variable' + support.type.getName
 			}
 		}
+		
+		val multName = varType.multiplicity
 
-		if (mult === null) {
-			result += supports.empty ? 'Scalar' + tname : tname
+		if (multName === 'Scalar') {
+			result += supports.empty ? multName + typeName : typeName
 		} else {
-			switch mult.type
-			{
-				case VariableMultiplicityType::ARRAY: result += 'Array' + tname
-				case VariableMultiplicityType::ARRAY2: result += 'Array2' + tname
-			}
+			result += multName + typeName
 		}
 
 		return result;

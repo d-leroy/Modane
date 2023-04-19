@@ -4,14 +4,14 @@ import fr.cea.modane.modane.Comment
 import java.util.regex.Pattern
 
 class ObfuscationUtils {
-	def obfuscate(Comment description)
+	static def obfuscate(Comment description)
 	{
 		if (description === null || description.comment.nullOrEmpty) return description
 		description.comment = obfuscate(description.comment)
 		return description
 	}
 	
-	def obfuscate(String string)
+	static def obfuscate(String string)
 	{
 		if (string.nullOrEmpty) return string
 		val p = Pattern.compile("[^\\s_]+")
@@ -21,7 +21,7 @@ class ObfuscationUtils {
 		return result
 	}
 	
-	private def char getRandomChar(boolean uc)
+	static private def char getRandomChar(boolean uc)
 	{
 		val int rnd = (Math.random * 26) as int
 		val char base = if (uc) 'A' else 'a'

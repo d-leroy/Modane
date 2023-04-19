@@ -15,6 +15,7 @@ import fr.cea.modane.Utils
 import fr.cea.modane.generator.ModaneGeneratorMessageDispatcher
 import fr.cea.modane.generator.ModaneGeneratorMessageDispatcher.MessageType
 import fr.cea.modane.modane.ArgDefinition
+import fr.cea.modane.modane.Comment
 import fr.cea.modane.modane.Direction
 import fr.cea.modane.modane.EntryPoint
 import fr.cea.modane.modane.Enumeration
@@ -82,6 +83,7 @@ class UmlToModane
 	extension EnumerationLiteralExtensions ele
 	
 	Set<URI> resourceURICache
+	boolean obfuscate = false
 	
 	def setResourceURICache(Set<URI> cache) {
 		resourceURICache = cache
@@ -106,9 +108,10 @@ class UmlToModane
 	def generate(Model umlModel, String absoluteOutputPath, String packagePrefix, boolean writeModaneFiles, boolean obfuscate)
 	{
 		val startTime = System.currentTimeMillis
+		this.obfuscate = obfuscate
 
 		messageDispatcher.post(MessageType.Exec, "Starting UML to Modane model transformation")
-		val resources = createModaneModelsResources(umlModel, absoluteOutputPath, packagePrefix, writeModaneFiles, obfuscate)
+		val resources = createModaneModelsResources(umlModel, absoluteOutputPath, packagePrefix, writeModaneFiles)
 		val afterConvertionTime = System.currentTimeMillis
 		messageDispatcher.post(MessageType.Exec, "UML to Modane model transformation ended in " + (afterConvertionTime-startTime)/1000.0 + "s")
 		
@@ -119,9 +122,9 @@ class UmlToModane
 	{
 		profile = umlModel.getAppliedProfile("ArcaneProfile")
 		defaultCategory = ModaneFactory::eINSTANCE.createUserCategory => [
-			name = "User"
+			name = "User".obfuscatedString
 			description = ModaneFactory::eINSTANCE.createComment => [
-				comment = "Default category"
+				comment = "Default category".obfuscatedString
 			]
 		]
 
@@ -134,7 +137,7 @@ class UmlToModane
 		val models = new ArrayList<ModaneModel>
 
 		// On a besoin d'un ModaneModel pour stocker la catégorie par défaut
-		models += ModaneFactory::eINSTANCE.createModaneModel => [name = "CategoriesModel" elements += defaultCategory]
+		models += ModaneFactory::eINSTANCE.createModaneModel => [name = "CategoriesModel".obfuscatedString elements += defaultCategory]
 
 		models += umlModel.toModaneModel(models)
 		models.forEach[m|m.eAllContents.filter(fr.cea.modane.modane.NamedElement).forEach[e|e.name = e.name.strip]]
@@ -155,7 +158,7 @@ class UmlToModane
 	 * Le outputPath est absolu pour pouvoir fonctionner hors d'Eclipse.
 	 * On va donc construire une URI de type file.
 	 */
-	def createModaneModelsResources(Model umlModel, String absoluteOuputPath, String packagePrefix, boolean writeFiles, boolean obfuscate)
+	def createModaneModelsResources(Model umlModel, String absoluteOuputPath, String packagePrefix, boolean writeFiles)
 	{
 		val models = createModaneModels(umlModel, packagePrefix)
 		models.forEach[x | x.addResource(absoluteOuputPath, Utils.FileExtension, resourceSet)]
@@ -200,13 +203,19 @@ class UmlToModane
 
 	private def getFileName(ModaneModel it, String fileExt)
 	{
-		if (name.nullOrEmpty) 'default' + fileExt
-		else name + '/' + name + fileExt
+		if (name.nullOrEmpty)
+		{
+			return 'default'.obfuscatedString + fileExt
+		}
+		else
+		{
+			return name.contains('.') ? name.split('\\.').join('/') + '/' + name.split('\\.').last + fileExt : name + '/' + name + fileExt
+		}
 	}
 
 	private def ModaneModel create ModaneFactory::eINSTANCE.createModaneModel toModaneModel(Package p, List<ModaneModel> models)
 	{
-		name = p.fullName
+		name = p.fullName.obfuscatedString
 		// creation des elements
 		// Le sortBy est fait pour le Jira MODANE-197 qui contient de longues explications...
 		for ( m : p.ownedMembers.filter[x | !x.name.nullOrEmpty].sortBy[x | x.name] )
@@ -228,14 +237,14 @@ class UmlToModane
 
 	private def Variable create ModaneFactory::eINSTANCE.createVariable toVariable(Class c)
 	{
-		name = c.name.separateWithDefault
-		axlName = c.name
-		description = c.description
+		val varName = c.name.obfuscatedString
+		name = varName.separateWithDefault
+		axlName = varName
+		description = c.description.obfuscatedComment
 		dump = c.varDump
 		executionDepend = c.varExecDep
 		needSync = c.varNeedSync
 		restore = c.varRestore
-		multiplicity = c.varMult
 		supports += c.varSupport
 		type = c.varType
 		family = c.varItemFamily?.toItemFamily
@@ -243,30 +252,30 @@ class UmlToModane
 
 	private def ItemFamily create ModaneFactory::eINSTANCE.createItemFamily toItemFamily(Class c)
 	{
-		name = c.name
+		name = c.name.obfuscatedString
 		support = c.itemFamilySupport
 	}
 
 	private def Struct create ModaneFactory::eINSTANCE.createStruct toStruct(Class c)
 	{
-		name = c.name
-		description = c.description
+		name = c.name.obfuscatedString
+		description = c.description.obfuscatedComment
 		for (p : c.parentStructs) parents += (p as Class).toStruct
 		for (p : c.pties) properties += (p as Property).toPty
 	}
 
 	private def Legacy create ModaneFactory::eINSTANCE.createLegacy toLegacy(Class c)
 	{
-		name = c.name
-		description = c.description
-		originNamespace = c.legacyNamespace
-		originFile = c.legacyFile
+		name = c.name.obfuscatedString
+		description = c.description.obfuscatedComment
+		originNamespace = c.legacyNamespace.obfuscatedString
+		originFile = c.legacyFile.obfuscatedString
 	}
 
 	private def Pty create ModaneFactory::eINSTANCE.createPty toPty(Property p)
 	{
-		name = p.name.separateWithDefault
-		description = p.description
+		name = p.name.obfuscatedString.separateWithDefault
+		description = p.description.obfuscatedComment
 		if (p.lowerBound == 0)
 		{
 			if (p.upperBound == -1) multiplicity = PtyMultiplicity::ZERO_STAR
@@ -277,15 +286,15 @@ class UmlToModane
 			if (p.upperBound == -1) multiplicity = PtyMultiplicity::ONE_STAR
 			else multiplicity = PtyMultiplicity::ONE_ONE
 		}
-		if (p.defaultValue !== null) defaultValue = p.defaultValue.stringValue.replaceAll('::','.')
+		if (p.defaultValue !== null) defaultValue = p.defaultValue.stringValue.split('::').map[obfuscatedString].join('.')
 		type = p.type.toArgType
-		namefr = p.getNameFr(profile.ptySt)
+		namefr = p.getNameFr(profile.ptySt).obfuscatedString
 		if (p.isUserEnabled(profile.ptySt)) categories += defaultCategory
 	}
 
 	private def ArgDefinition create ModaneFactory::eINSTANCE.createArgDefinition toArgument(Parameter p)
 	{
-		name = p.name.separateWithDefault
+		name = p.name.obfuscatedString.separateWithDefault
 		multiple = (p.upperBound == -1 )
 		type = p.type.toArgType
 		if (p.defaultValue !== null) defaultValue = p.defaultValue.stringValue.replaceAll('::','.')
@@ -296,14 +305,14 @@ class UmlToModane
 
 	private def Enumeration create ModaneFactory::eINSTANCE.createEnumeration toEnumeration(org.eclipse.uml2.uml.Enumeration e)
 	{
-		name = e.name
-		description = e.description
+		name = e.name.obfuscatedString
+		description = e.description.obfuscatedComment
 		for (l : e.ownedLiterals.filter(x | x.isStereotypeApplied(profile.enumLiteralSt))) literals += l.toEnumerationLiteral
 	}
 
 	private def EnumerationLiteral create ModaneFactory::eINSTANCE.createEnumerationLiteral toEnumerationLiteral(org.eclipse.uml2.uml.EnumerationLiteral l)
 	{
-		name = l.name
+		name = l.name.obfuscatedString
 		val stringValue = l.value
 		if (stringValue.nullOrEmpty)
 			valueProvided = false
@@ -314,15 +323,15 @@ class UmlToModane
 		} catch (NumberFormatException e) {
 			valueProvided = false
 		}
-		description = l.description
-		namefr = l.getNameFr(profile.enumLiteralSt)
+		description = l.description.obfuscatedComment
+		namefr = l.getNameFr(profile.enumLiteralSt).obfuscatedString
 		if (l.isUserEnabled(profile.enumLiteralSt)) categories += defaultCategory
 	}
 
 	private def Interface create ModaneFactory::eINSTANCE.createInterface toInterface(org.eclipse.uml2.uml.Interface i)
 	{
-		name = i.name
-		description = i.description
+		name = i.name.obfuscatedString
+		description = i.description.obfuscatedComment
 		for (p : i.parentInterfaces) parents += (p as org.eclipse.uml2.uml.Interface).toInterface
 		for (p : i.pties) properties += (p as Property).toPty
 		for (f : i.funcs) functions += f.toFunction
@@ -343,9 +352,9 @@ class UmlToModane
 
 	private def init(ServiceOrModule it, Class c, Stereotype s)
 	{
-		name = c.name
-		namefr = c.getNameFr(s)
-		description = c.description
+		name = c.name.obfuscatedString
+		namefr = c.getNameFr(s).obfuscatedString
+		description = c.description.obfuscatedComment
 		if (c.isUserEnabled(s)) categories += defaultCategory
 		for (i : c.implementedInterfaces) interfaces += i.toInterface
 		for (p : c.pties) properties += (p as Property).toPty
@@ -371,7 +380,7 @@ class UmlToModane
 
 	private def OverrideFunction create ModaneFactory::eINSTANCE.createOverrideFunction toOverrideFunction(Operation o, Function interfaceFunc)
 	{
-		description = o.description
+		description = o.description.obfuscatedComment
 		func = interfaceFunc
 		for (v : o.funcInNotOutVars) inVars += v.toUmlClass.toVariable.toVarReference
 		for (v : o.funcOutVars)
@@ -389,8 +398,8 @@ class UmlToModane
 
 	private def EntryPoint create ModaneFactory::eINSTANCE.createEntryPoint toEntryPoint(Operation o)
 	{
-		name = o.name
-		description = o.description
+		name = o.name.obfuscatedString
+		description = o.description.obfuscatedComment
 		location = o.epLocation
 		autoLoad = o.epAutoLoad
 		for (v : o.epInNotOutVars) inVars += v.toUmlClass.toVariable.toVarReference
@@ -410,8 +419,8 @@ class UmlToModane
 
 	private def Function create ModaneFactory::eINSTANCE.createFunction toFunction(Operation o)
 	{
-		name = o.name
-		description = o.description
+		name = o.name.obfuscatedString
+		description = o.description.obfuscatedComment
 		sequential = !o.funcParallel
 		support = o.funcSupport
 		const = o.funcConst
@@ -452,8 +461,7 @@ class UmlToModane
 	private def VarDefinition toVarDefinition(Class c, boolean isIn, boolean isOut)
 	{
 		val it = ModaneFactory::eINSTANCE.createVarDefinition
-		name = c.name.separateWithDefault
-		multiplicity = c.varMult
+		name = c.name.obfuscatedString.separateWithDefault
 		supports += c.varSupport
 		type = c.varType
 		if (isIn && isOut) direction = Direction::INOUT
@@ -499,11 +507,7 @@ class UmlToModane
 
 	private def PtyOrArgType toArgType(PrimitiveType type)
 	{
-		if (type.name == 'Boolean')
-		{
-			ModaneFactory::eINSTANCE.createSimple => [type = SimpleType::BOOL]
-		}
-		else if (SimpleType::getByName(type.name) === null)
+		if (SimpleType::getByName(type.name) === null)
 		{
 			if (type.name.endsWith('Group'))
 			{
@@ -518,5 +522,17 @@ class UmlToModane
 		{
 			ModaneFactory::eINSTANCE.createSimple => [type = SimpleType::getByName(type.name)]
 		}
+	}
+	
+	private def getObfuscatedString(String string)
+	{
+		if (obfuscate) return ObfuscationUtils::obfuscate(string)
+		else return string
+	}
+	
+	private def getObfuscatedComment(Comment comment)
+	{
+		if (obfuscate) return ObfuscationUtils::obfuscate(comment)
+		else return comment
 	}
 }

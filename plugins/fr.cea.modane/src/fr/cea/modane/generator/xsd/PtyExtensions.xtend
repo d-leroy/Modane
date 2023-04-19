@@ -106,7 +106,7 @@ class PtyExtensions
 	{
 		switch(t)
 		{
-			case BOOL: '''xs:boolean'''
+			case BOOLEAN: '''xs:boolean'''
 			case INT32: '''xs:integer'''
 			case INT64: '''xs:integer'''
 			case INTEGER: '''xs:integer'''

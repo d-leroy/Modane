@@ -21,6 +21,7 @@ import fr.cea.modane.modane.PtyMultiplicity
 import fr.cea.modane.modane.Reference
 import fr.cea.modane.modane.Referenceable
 import fr.cea.modane.modane.Simple
+import fr.cea.modane.modane.SimpleType
 import fr.cea.modane.modane.Struct
 import fr.cea.modane.modane.UserCategory
 import java.util.HashMap
@@ -29,6 +30,7 @@ import java.util.List
 import static extension fr.cea.modane.ModaneElementExtensions.*
 import static extension fr.cea.modane.ModaneStringExtensions.*
 import static extension fr.cea.modane.StructExtensions.*
+import static extension fr.cea.modane.generator.VariableExtensions.*
 
 class PtyExtensions
 {
@@ -50,12 +52,21 @@ class PtyExtensions
 		else
 			referencedName
 	}
+	
+	private def getTypeName(Simple it)
+	{
+		switch (type.typeName)
+		{
+			case SimpleType::BOOLEAN.getName: 'bool'
+			default: type.typeName.toLowerCase
+		}
+	}
 
 	private def dispatch getContent(Pty it, Simple t, HashMap<Struct, Integer> encounteredStructs)
 	'''
 		<simple 
 			name="«name.separateWith('-')»"
-			type="«t.type.getName.toLowerCase»"
+			type="«t.typeName»"
 			«IF defaultValue !== null» default="«defaultValue»"«ENDIF»
 			«arcaneBound»>
 				«idBlock»

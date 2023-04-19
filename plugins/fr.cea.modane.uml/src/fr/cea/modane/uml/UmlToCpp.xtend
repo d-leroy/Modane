@@ -50,7 +50,7 @@ class UmlToCpp
 		val startTime = System.currentTimeMillis
 
 		messageDispatcher.post(MessageType.Exec, "Starting UML to Modane model transformation")
-		val resources = umlToModane.createModaneModelsResources(umlModel, absoluteOutputPath, packagePrefix, writeModaneFiles, false)
+		val resources = umlToModane.createModaneModelsResources(umlModel, absoluteOutputPath, packagePrefix, writeModaneFiles)
 		val afterConvertionTime = System.currentTimeMillis
 		messageDispatcher.post(MessageType.Exec, "UML to Modane model transformation ended in " + (afterConvertionTime-startTime)/1000.0 + "s")
 

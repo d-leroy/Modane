@@ -48,7 +48,7 @@ class CppVarDefinition extends CppVariable
 		val supports = v.supports
 		!supports.empty && supports.get(0).type.component
 	}
-	override getTypeName() { getTypeName(v.type, v.supports, v.multiplicity) }
+	override getTypeName() { getTypeName(v.type, v.supports) }
 	override getArgName() { v.name }	
 }
 

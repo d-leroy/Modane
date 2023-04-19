@@ -250,7 +250,6 @@ public class ModaneMatcher extends ModaneSwitch<SpecificMatch> {
 			if (o1.getName() != null && o1.getName().equals(o2.getName())) {
 				// Support, multiplicity and type must match
 				if (o1.getSupports() != null && o1.getSupports().equals(o2.getSupports())
-						&& o1.getMultiplicity() != null && o1.getMultiplicity().equals(o2.getMultiplicity())
 						&& o1.getType() != null && o1.getType().equals(o2.getType())) {
 					return SpecificMatch.MATCH;
 				}

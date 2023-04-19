@@ -31,16 +31,35 @@
       <genEnumLiterals ecoreEnumLiteral="Modane.ecore#//EntryPointAutoLoad/AutoLoadEnd"/>
     </genEnums>
     <genEnums typeSafeEnumCompatible="false" ecoreEnum="Modane.ecore#//SimpleType">
-      <genEnumLiterals ecoreEnumLiteral="Modane.ecore#//SimpleType/bool"/>
+      <genEnumLiterals ecoreEnumLiteral="Modane.ecore#//SimpleType/Boolean"/>
+      <genEnumLiterals ecoreEnumLiteral="Modane.ecore#//SimpleType/ArrayBoolean"/>
+      <genEnumLiterals ecoreEnumLiteral="Modane.ecore#//SimpleType/Array2Boolean"/>
       <genEnumLiterals ecoreEnumLiteral="Modane.ecore#//SimpleType/String"/>
+      <genEnumLiterals ecoreEnumLiteral="Modane.ecore#//SimpleType/ArrayString"/>
       <genEnumLiterals ecoreEnumLiteral="Modane.ecore#//SimpleType/Integer"/>
+      <genEnumLiterals ecoreEnumLiteral="Modane.ecore#//SimpleType/ArrayInteger"/>
+      <genEnumLiterals ecoreEnumLiteral="Modane.ecore#//SimpleType/Array2Integer"/>
       <genEnumLiterals ecoreEnumLiteral="Modane.ecore#//SimpleType/Int32"/>
+      <genEnumLiterals ecoreEnumLiteral="Modane.ecore#//SimpleType/ArrayInt32"/>
+      <genEnumLiterals ecoreEnumLiteral="Modane.ecore#//SimpleType/Array2Int32"/>
       <genEnumLiterals ecoreEnumLiteral="Modane.ecore#//SimpleType/Int64"/>
+      <genEnumLiterals ecoreEnumLiteral="Modane.ecore#//SimpleType/ArrayInt64"/>
+      <genEnumLiterals ecoreEnumLiteral="Modane.ecore#//SimpleType/Array2Int64"/>
       <genEnumLiterals ecoreEnumLiteral="Modane.ecore#//SimpleType/Real"/>
+      <genEnumLiterals ecoreEnumLiteral="Modane.ecore#//SimpleType/ArrayReal"/>
+      <genEnumLiterals ecoreEnumLiteral="Modane.ecore#//SimpleType/Array2Real"/>
       <genEnumLiterals ecoreEnumLiteral="Modane.ecore#//SimpleType/Real2"/>
+      <genEnumLiterals ecoreEnumLiteral="Modane.ecore#//SimpleType/ArrayReal2"/>
+      <genEnumLiterals ecoreEnumLiteral="Modane.ecore#//SimpleType/Array2Real2"/>
       <genEnumLiterals ecoreEnumLiteral="Modane.ecore#//SimpleType/Real2x2"/>
+      <genEnumLiterals ecoreEnumLiteral="Modane.ecore#//SimpleType/ArrayReal2x2"/>
+      <genEnumLiterals ecoreEnumLiteral="Modane.ecore#//SimpleType/Array2Real2x2"/>
       <genEnumLiterals ecoreEnumLiteral="Modane.ecore#//SimpleType/Real3"/>
+      <genEnumLiterals ecoreEnumLiteral="Modane.ecore#//SimpleType/ArrayReal3"/>
+      <genEnumLiterals ecoreEnumLiteral="Modane.ecore#//SimpleType/Array2Real3"/>
       <genEnumLiterals ecoreEnumLiteral="Modane.ecore#//SimpleType/Real3x3"/>
+      <genEnumLiterals ecoreEnumLiteral="Modane.ecore#//SimpleType/ArrayReal3x3"/>
+      <genEnumLiterals ecoreEnumLiteral="Modane.ecore#//SimpleType/Array2Real3x3"/>
     </genEnums>
     <genEnums typeSafeEnumCompatible="false" ecoreEnum="Modane.ecore#//ItemType">
       <genEnumLiterals ecoreEnumLiteral="Modane.ecore#//ItemType/Item"/>
@@ -79,6 +98,13 @@
       <genEnumLiterals ecoreEnumLiteral="Modane.ecore#//ItemGroupType/ComponentCellGroup"/>
       <genEnumLiterals ecoreEnumLiteral="Modane.ecore#//ItemGroupType/AllEnvCellGroup"/>
     </genEnums>
+    <genEnums typeSafeEnumCompatible="false" ecoreEnum="Modane.ecore#//ReservedKeywords">
+      <genEnumLiterals ecoreEnumLiteral="Modane.ecore#//ReservedKeywords/Cells"/>
+      <genEnumLiterals ecoreEnumLiteral="Modane.ecore#//ReservedKeywords/Nodes"/>
+      <genEnumLiterals ecoreEnumLiteral="Modane.ecore#//ReservedKeywords/Faces"/>
+      <genEnumLiterals ecoreEnumLiteral="Modane.ecore#//ReservedKeywords/Sum"/>
+      <genEnumLiterals ecoreEnumLiteral="Modane.ecore#//ReservedKeywords/Legacy"/>
+    </genEnums>
     <genEnums typeSafeEnumCompatible="false" ecoreEnum="Modane.ecore#//Direction">
       <genEnumLiterals ecoreEnumLiteral="Modane.ecore#//Direction/in"/>
       <genEnumLiterals ecoreEnumLiteral="Modane.ecore#//Direction/out"/>
@@ -89,10 +115,6 @@
       <genEnumLiterals ecoreEnumLiteral="Modane.ecore#//PtyMultiplicity/OneOne"/>
       <genEnumLiterals ecoreEnumLiteral="Modane.ecore#//PtyMultiplicity/ZeroStar"/>
       <genEnumLiterals ecoreEnumLiteral="Modane.ecore#//PtyMultiplicity/OneStar"/>
-    </genEnums>
-    <genEnums typeSafeEnumCompatible="false" ecoreEnum="Modane.ecore#//VariableMultiplicityType">
-      <genEnumLiterals ecoreEnumLiteral="Modane.ecore#//VariableMultiplicityType/Array"/>
-      <genEnumLiterals ecoreEnumLiteral="Modane.ecore#//VariableMultiplicityType/Array2"/>
     </genEnums>
     <genClasses ecoreClass="Modane.ecore#//ModaneModel">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Modane.ecore#//ModaneModel/description"/>
@@ -108,7 +130,6 @@
     </genClasses>
     <genClasses ecoreClass="Modane.ecore#//Variable">
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Modane.ecore#//Variable/type"/>
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Modane.ecore#//Variable/multiplicity"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Modane.ecore#//Variable/supports"/>
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Modane.ecore#//Variable/axlName"/>
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Modane.ecore#//Variable/dump"/>
@@ -172,7 +193,6 @@
     </genClasses>
     <genClasses ecoreClass="Modane.ecore#//VarDefinition">
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Modane.ecore#//VarDefinition/type"/>
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Modane.ecore#//VarDefinition/multiplicity"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Modane.ecore#//VarDefinition/supports"/>
     </genClasses>
     <genClasses ecoreClass="Modane.ecore#//VarReference">
@@ -239,9 +259,6 @@
     </genClasses>
     <genClasses ecoreClass="Modane.ecore#//ItemGroup">
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Modane.ecore#//ItemGroup/type"/>
-    </genClasses>
-    <genClasses ecoreClass="Modane.ecore#//VariableMultiplicity">
-      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Modane.ecore#//VariableMultiplicity/type"/>
     </genClasses>
     <genClasses ecoreClass="Modane.ecore#//Reference">
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference Modane.ecore#//Reference/target"/>

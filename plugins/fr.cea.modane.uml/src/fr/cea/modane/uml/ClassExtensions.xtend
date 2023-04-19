@@ -13,7 +13,6 @@ import fr.cea.modane.modane.ItemType
 import fr.cea.modane.modane.ModaneFactory
 import fr.cea.modane.modane.ServiceType
 import fr.cea.modane.modane.SimpleType
-import fr.cea.modane.modane.VariableMultiplicityType
 import org.eclipse.emf.ecore.EObject
 import org.eclipse.uml2.uml.Class
 import org.eclipse.uml2.uml.EnumerationLiteral
@@ -43,12 +42,6 @@ class ClassExtensions
 	def getVarNeedSync(Class it) { getValue(profile.variableSt, "needSync") as Boolean }
 	def getVarRestore(Class it) { getValue(profile.variableSt, "restore") as Boolean }
 
-	def getVarMult(Class it)
-	{
-		val umlMult = getValue(profile.variableSt, "multiplicity") as EnumerationLiteral
-		umlMult.name == 'Scalar' ? null : ModaneFactory::eINSTANCE.createVariableMultiplicity => [type = VariableMultiplicityType::getByName(umlMult.name)]
-	}
-
 	def getVarSupport(Class it)
 	{
 		val support = getSupport(profile.variableSt)
@@ -67,7 +60,9 @@ class ClassExtensions
 	def getVarType(Class it)
 	{
 		val umlType = getValue(profile.variableSt, "type") as EObject
-		SimpleType::getByName(umlType.toUmlPrimitiveType.name)
+		val umlMult = getValue(profile.variableSt, "multiplicity") as EnumerationLiteral
+		val multString = umlMult.name == 'Scalar' ? '' : umlMult.name
+		SimpleType::getByName(multString + umlType.toUmlPrimitiveType.name)
 	}
 
 	def getItemFamilySupport(Class it)

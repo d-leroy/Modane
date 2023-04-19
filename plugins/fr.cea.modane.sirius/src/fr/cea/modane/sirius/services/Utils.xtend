@@ -125,7 +125,7 @@ class Utils
 
 	static def dispatch getDisplayExpression(VarDefinition it)
 	{
-		#[direction.literal, supports.empty ? '' : supports.get(0).type.getName, multiplicity === null ? '' : multiplicity.type.literal, type.getName, name].join(' ')
+		#[direction.literal, supports.empty ? '' : supports.get(0).type.getName, type.getName, name].join(' ')
 	}
 
 	static def dispatch getDisplayExpression(VarReference it)
