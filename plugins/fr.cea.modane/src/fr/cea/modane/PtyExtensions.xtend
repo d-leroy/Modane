@@ -11,8 +11,8 @@ package fr.cea.modane
 
 import fr.cea.modane.modane.Interface
 import fr.cea.modane.modane.Pty
-import fr.cea.modane.modane.PtyMultiplicity
 import fr.cea.modane.modane.Reference
+import fr.cea.modane.modane.Simple
 
 import static extension fr.cea.modane.InterfaceExtensions.*
 
@@ -27,7 +27,7 @@ class PtyExtensions
 	 */
 	static def isConcrete(Pty it) 
 	{ 
-		if (multiple) return true
+		if (actuallyMultiple) return true
 		else if (!(type instanceof Reference)) return true
 		else
 		{
@@ -38,8 +38,28 @@ class PtyExtensions
 		return false
 	}
 	
-	static def isMultiple(Pty it)
+	static def isActuallyMultiple(Pty it)
 	{
-		(multiplicity==PtyMultiplicity::ZERO_STAR || multiplicity==PtyMultiplicity::ONE_STAR)
+		if (type instanceof Simple) {
+			switch ((type as Simple).type) {
+				case ARRAY_BOOLEAN,
+				case ARRAY_INT32,
+				case ARRAY_INT64,
+				case ARRAY_INTEGER,
+				case ARRAY_REAL,
+				case ARRAY_REAL2,
+				case ARRAY_REAL2X2,
+				case ARRAY_REAL3,
+				case ARRAY_REAL3X3,
+				case ARRAY_STRING: {
+					return true
+				}
+				default: {
+					return false
+				}
+			}
+		} else {
+			multiple
+		}
 	}
 }

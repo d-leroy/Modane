@@ -55,16 +55,14 @@ class CppVarDefinition extends CppVariable
 class CppVarReference  extends CppVariable
 {
 	VarReference v
-	Direction d
 	
-	new(VarReference variable, Direction direction) {
+	new(VarReference variable) {
 		v = variable
-		d  = direction
 	}
 
 	override getName() { v.variable.name.separateWithDefault }
 	override getDescription() { v.variable.fromDescription }
-	override getDirection() { d }
+	override getDirection() { v.direction }
 	override isComponent() {
 		val supports = v.variable.supports
 		!supports.empty && supports.get(0).type.component

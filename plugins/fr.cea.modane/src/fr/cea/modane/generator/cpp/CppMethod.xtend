@@ -69,9 +69,7 @@ class FunctionCppMethod implements CppMethod
 	
 	override getAllVars() 
 	{ 
-		f.inVars.map[v | new CppVarReference(v, Direction::IN)] +
-		f.outVars.map[v | new CppVarReference(v, Direction::OUT)] +
-		f.inOutVars.map[v | new CppVarReference(v, Direction::INOUT)] +
+		f.vars.map[v | new CppVarReference(v)] +
 		f.args.filter(VarDefinition).map[v | new CppVarDefinition(v)]
 	}
 }
@@ -92,12 +90,8 @@ class OverrideFunctionCppMethod extends FunctionCppMethod
 	
 	override getAllVars() 
 	{ 
-		of.inVars.map[v | new CppVarReference(v, Direction::IN)] +
-		of.outVars.map[v | new CppVarReference(v, Direction::OUT)] +
-		of.inOutVars.map[v | new CppVarReference(v, Direction::INOUT)] +
-		of.func.inVars.map[v | new CppVarReference(v, Direction::IN)] +
-		of.func.outVars.map[v | new CppVarReference(v, Direction::OUT)] +
-		of.func.inOutVars.map[v | new CppVarReference(v, Direction::INOUT)] +
+		of.vars.map[v | new CppVarReference(v)] +
+		of.func.vars.map[v | new CppVarReference(v)] +
 		of.func.args.filter(VarDefinition).map[v | new CppVarDefinition(v)]
 	}
 }
@@ -129,8 +123,6 @@ class EntryPointCppMethod implements CppMethod
 	override isOverride() { false }	
 	
 	override getAllVars() {
-		ep.inVars.map[v | new CppVarReference(v, Direction::IN)] +
-		ep.outVars.map[v | new CppVarReference(v, Direction::OUT)] +
-		ep.inOutVars.map[v | new CppVarReference(v, Direction::INOUT)]
+		ep.vars.map[v | new CppVarReference(v)]
 	}
 }

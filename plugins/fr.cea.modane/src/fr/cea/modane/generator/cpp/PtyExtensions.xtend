@@ -11,7 +11,6 @@ package fr.cea.modane.generator.cpp
 
 import fr.cea.modane.modane.Item
 import fr.cea.modane.modane.Pty
-import fr.cea.modane.modane.PtyMultiplicity
 
 import static extension fr.cea.modane.ModaneStringExtensions.*
 import static extension fr.cea.modane.generator.cpp.PtyOrArgTypeExtensions.*
@@ -36,6 +35,7 @@ class PtyExtensions extends fr.cea.modane.PtyExtensions
 	 */
 	private static def getSetterTypeName(Pty it) 
 	{ 
+		// We don't use 'actuallyMultiple' here as typename of Simple types already handle multiplicity
 		if (multiple)
 		{
 			if (type instanceof Item) type.typeName + 'Vector'
@@ -43,7 +43,7 @@ class PtyExtensions extends fr.cea.modane.PtyExtensions
 		}
 		else
 		{
-			type.typeName	
+			type.typeName
 		}
 	}
 	
@@ -66,6 +66,7 @@ class PtyExtensions extends fr.cea.modane.PtyExtensions
 	 */
 	private static def getReturnTypeName(Pty it)
 	{
+		// We don't use 'actuallyMultiple' here as typename of Simple types already handle multiplicity
 		if (multiple)
 		{
 			if (type instanceof Item) type.typeName + 'Vector'
@@ -73,7 +74,7 @@ class PtyExtensions extends fr.cea.modane.PtyExtensions
 		}
 		else
 		{
-			type.typeName	
+			type.typeName
 		}
 	}
 
@@ -95,6 +96,7 @@ class PtyExtensions extends fr.cea.modane.PtyExtensions
 	 */
 	static def getAttrTypeName(Pty it) 
 	{ 
+		// We don't use 'actuallyMultiple' here as typename of Simple types already handle multiplicity
 		if (multiple)
 		{
 			if (type instanceof Item) type.typeName + 'Vector'
@@ -142,7 +144,7 @@ class PtyExtensions extends fr.cea.modane.PtyExtensions
 	static def getGetterName(Pty it) { 'get' + name.separateWithUpperCase }
 	static def getSetterName(Pty it) { 'set' + name.separateWithUpperCase }
 	static def getHasName(Pty it) { 'has' + name.separateWithUpperCase }
-	static def needHasAccessor(Pty it) { multiplicity == PtyMultiplicity::ZERO_ONE }
+	static def needHasAccessor(Pty it) { !actuallyMultiple && optional }
 	
 	static def getInitValue(Pty it)
 	{

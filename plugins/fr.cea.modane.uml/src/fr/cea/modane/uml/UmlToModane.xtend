@@ -31,10 +31,10 @@ import fr.cea.modane.modane.ModaneModel
 import fr.cea.modane.modane.Module
 import fr.cea.modane.modane.OverrideFunction
 import fr.cea.modane.modane.Pty
-import fr.cea.modane.modane.PtyMultiplicity
 import fr.cea.modane.modane.PtyOrArgType
 import fr.cea.modane.modane.Service
 import fr.cea.modane.modane.ServiceOrModule
+import fr.cea.modane.modane.Simple
 import fr.cea.modane.modane.SimpleType
 import fr.cea.modane.modane.Struct
 import fr.cea.modane.modane.UserCategory
@@ -276,18 +276,10 @@ class UmlToModane
 	{
 		name = p.name.obfuscatedString.separateWithDefault
 		description = p.description.obfuscatedComment
-		if (p.lowerBound == 0)
-		{
-			if (p.upperBound == -1) multiplicity = PtyMultiplicity::ZERO_STAR
-			else multiplicity = PtyMultiplicity::ZERO_ONE
-		}
-		else
-		{
-			if (p.upperBound == -1) multiplicity = PtyMultiplicity::ONE_STAR
-			else multiplicity = PtyMultiplicity::ONE_ONE
-		}
+		type = p.type.toArgType.getActualType(p.upperBound)
+		multiple = p.upperBound.getActualMultiplicity(type)
+		optional = p.lowerBound == 0
 		if (p.defaultValue !== null) defaultValue = p.defaultValue.stringValue.split('::').map[obfuscatedString].join('.')
-		type = p.type.toArgType
 		namefr = p.getNameFr(profile.ptySt).obfuscatedString
 		if (p.isUserEnabled(profile.ptySt)) categories += defaultCategory
 	}
@@ -295,8 +287,8 @@ class UmlToModane
 	private def ArgDefinition create ModaneFactory::eINSTANCE.createArgDefinition toArgument(Parameter p)
 	{
 		name = p.name.obfuscatedString.separateWithDefault
-		multiple = (p.upperBound == -1 )
-		type = p.type.toArgType
+		type = p.type.toArgType.getActualType(p.upperBound)
+		multiple = p.upperBound.getActualMultiplicity(type)
 		if (p.defaultValue !== null) defaultValue = p.defaultValue.stringValue.replaceAll('::','.')
 		if (p.direction == ParameterDirectionKind::OUT_LITERAL) direction = Direction::OUT
 		else if (p.direction == ParameterDirectionKind::INOUT_LITERAL) direction = Direction::INOUT
@@ -382,18 +374,8 @@ class UmlToModane
 	{
 		description = o.description.obfuscatedComment
 		func = interfaceFunc
-		for (v : o.funcInNotOutVars) inVars += v.toUmlClass.toVariable.toVarReference
-		for (v : o.funcOutVars)
-		{
-			if (o.funcInVars.contains(v))
-			{
-				inOutVars += v.toUmlClass.toVariable.toVarReference
-			}
-			else
-			{
-				outVars += v.toUmlClass.toVariable.toVarReference
-			}
-		}
+		for (v : o.funcInNotOutVars) vars += v.toUmlClass.toVariable.toVarReference(true, false)
+		for (v : o.funcOutVars) vars += v.toUmlClass.toVariable.toVarReference(o.funcInVars.contains(v), true)
 	}
 
 	private def EntryPoint create ModaneFactory::eINSTANCE.createEntryPoint toEntryPoint(Operation o)
@@ -402,18 +384,8 @@ class UmlToModane
 		description = o.description.obfuscatedComment
 		location = o.epLocation
 		autoLoad = o.epAutoLoad
-		for (v : o.epInNotOutVars) inVars += v.toUmlClass.toVariable.toVarReference
-		for (v : o.epOutVars)
-		{
-			if (o.epInVars.contains(v))
-			{
-				inOutVars += v.toUmlClass.toVariable.toVarReference
-			}
-			else
-			{
-				outVars += v.toUmlClass.toVariable.toVarReference
-			}
-		}
+		for (v : o.epInNotOutVars) vars += v.toUmlClass.toVariable.toVarReference(true, false)
+		for (v : o.epOutVars) vars += v.toUmlClass.toVariable.toVarReference(o.epInVars.contains(v), true)
 		for (cf : o.epCalledFuncs) calls += cf.toOperation.toFunction
 	}
 
@@ -428,24 +400,14 @@ class UmlToModane
 		{
 			val c = v.toUmlClass
 			if (c.abstract) args += c.toVarDefinition(true, false)
-			else inVars += c.toVariable.toVarReference
+			else vars += c.toVariable.toVarReference(true, false)
 		}
 		for (v : o.funcOutVars)
 		{
 			val c = v.toUmlClass
 			val isIn = o.funcInVars.contains(v)
 			if (c.abstract) args += c.toVarDefinition(isIn, true)
-			else
-			{
-				if (isIn)
-				{
-					inOutVars += c.toVariable.toVarReference
-				}
-				else
-				{
-					outVars += c.toVariable.toVarReference
-				}
-			}
+			else vars += c.toVariable.toVarReference(isIn, true)
 		}
 		for ( p : o.inOutParameters) args += p.toArgument
 		for (cf : o.funcCalledFuncs) calls += cf.toOperation.toFunction
@@ -453,9 +415,38 @@ class UmlToModane
 		// s'il y a un paramètre retour => type de la fonction
 		if (o.hasReturnParameter)
 		{
-			type = o.returnParameter.type.toArgType
-			multiple = (o.returnParameter.upperBound == -1)
+			type = o.returnParameter.type.toArgType.getActualType(o.returnParameter.upperBound)
+			multiple = o.returnParameter.upperBound.getActualMultiplicity(type)
 		}
+	}
+	
+	def getActualType(PtyOrArgType it, int upperBound) {
+		if (it instanceof Simple && upperBound == -1) {
+			val simpleType = (it as Simple).type
+			switch (simpleType) {
+				case BOOLEAN,
+				case INT32,
+				case INT64,
+				case INTEGER,
+				case REAL,
+				case REAL2,
+				case REAL2X2,
+				case REAL3,
+				case REAL3X3,
+				case STRING: {
+					return ModaneFactory::eINSTANCE.createSimple => [simple| simple.type = SimpleType::getByName('Array' + simpleType.getName)]
+				}
+				default: {
+					return it
+				}
+			}
+		} else {
+			return it
+		}
+	}
+
+	def getActualMultiplicity(int upperBound, PtyOrArgType type) {
+		return !(type instanceof Simple) && upperBound == -1
 	}
 
 	private def VarDefinition toVarDefinition(Class c, boolean isIn, boolean isOut)
@@ -470,19 +461,12 @@ class UmlToModane
 		return it
 	}
 
-//	private def VarReference toVarReference(Variable v, boolean isIn, boolean isOut)
-//	{
-//		val it = ModaneFactory::eINSTANCE.createVarReference
-//		if (isIn && isOut) direction = Direction::INOUT
-//		else if (isOut) direction = Direction::OUT
-//		else direction = Direction::IN
-//		variable = v
-//		return it
-//	}
-
-	private def VarReference toVarReference(Variable v)
+	private def VarReference toVarReference(Variable v, boolean isIn, boolean isOut)
 	{
-		ModaneFactory::eINSTANCE.createVarReference => [
+		return ModaneFactory::eINSTANCE.createVarReference => [
+			if (isIn && isOut) direction = Direction::INOUT
+			else if (isOut) direction = Direction::OUT
+			else direction = Direction::IN
 			variable = v
 		]
 	}

@@ -15,8 +15,6 @@ import fr.cea.modane.modane.Pty
 import fr.cea.modane.modane.Variable
 import java.util.LinkedHashSet
 
-import static extension fr.cea.modane.EntryPointExtensions.*
-import static extension fr.cea.modane.FunctionExtensions.*
 import static extension fr.cea.modane.InterfaceExtensions.*
 
 class ModuleExtensions

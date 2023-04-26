@@ -18,13 +18,4 @@ class EntryPointExtensions
 	{
 		eContainer as Module
 	}
-	
-	def static getVars(EntryPoint it)
-	{
-		val result = newArrayList
-		result += inVars
-		result += outVars
-		result += inOutVars
-		return result
-	}
 }

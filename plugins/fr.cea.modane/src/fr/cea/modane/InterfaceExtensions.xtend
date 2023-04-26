@@ -21,7 +21,7 @@ import java.util.LinkedHashSet
 
 import static extension fr.cea.modane.PtyExtensions.*
 
-class InterfaceExtensions 
+class InterfaceExtensions
 {
 	static def boolean isConcrete(Interface it)
 	{

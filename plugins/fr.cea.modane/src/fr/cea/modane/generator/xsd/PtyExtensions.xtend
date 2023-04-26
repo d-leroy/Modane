@@ -17,7 +17,6 @@ import fr.cea.modane.modane.Item
 import fr.cea.modane.modane.Legacy
 import fr.cea.modane.modane.ModanePackage
 import fr.cea.modane.modane.Pty
-import fr.cea.modane.modane.PtyMultiplicity
 import fr.cea.modane.modane.Reference
 import fr.cea.modane.modane.Service
 import fr.cea.modane.modane.Simple
@@ -29,6 +28,7 @@ import org.eclipse.emf.ecore.EObject
 import static fr.cea.modane.generator.xsd.XsdUtils.*
 
 import static extension fr.cea.modane.generator.xsd.ModaneElementExtensions.*
+import static extension fr.cea.modane.PtyExtensions.*
 
 class PtyExtensions
 {
@@ -93,12 +93,16 @@ class PtyExtensions
 	
 	private static def getArcaneBound(Pty it)
 	{
-		switch multiplicity
-		{
-			case PtyMultiplicity::ZERO_STAR : '''minOccurs="0" maxOccurs="unbounded"'''
-			case PtyMultiplicity::ONE_STAR : '''minOccurs="1" maxOccurs="unbounded"'''
-			case PtyMultiplicity::ZERO_ONE : '''minOccurs="0" maxOccurs="1"'''
-			default : '''minOccurs="1" maxOccurs="1"'''
+		if (actuallyMultiple) {
+			if (optional) {
+				return '''minOccurs="0" maxOccurs="unbounded"'''
+			} else {
+				return '''minOccurs="1" maxOccurs="unbounded"'''
+			}
+		} else if (optional) {
+			return '''minOccurs="0" maxOccurs="1"'''
+		} else {
+			return '''minOccurs="1" maxOccurs="1"'''
 		}
 	}
 

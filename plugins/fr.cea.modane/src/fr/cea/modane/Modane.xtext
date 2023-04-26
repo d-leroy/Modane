@@ -66,7 +66,7 @@ Struct:
 
 Pty:
 	description=Comment?
-	multiplicity=PtyMultiplicity type=PtyOrArgType name=ID ('=' defaultValue=STRING)?
+	(optional?='opt')? type=PtyOrArgType (multiple?='[*]')? name=ID ('=' defaultValue=STRING)?
 	('namefr' namefr=STRING)? ('categories' categories+=[UserCategory|QualifiedName] (',' categories+=[UserCategory|QualifiedName])* )? ';';
 
 PtyOrArgType:
@@ -85,32 +85,30 @@ Interface:
 Function:
 	description=Comment?
 	'def' (const?='const')?
-	('void'|(type=PtyOrArgType (multiple?='*')?))  name=ID
+	('void'|(type=PtyOrArgType (multiple?='[*]')?))  name=ID
 	'(' (args+=Arg (',' args+=Arg)*)? ')'
-	 ('on' support=FunctionItem)? (sequential?='sequentially')?
-	 ('in' inVars+=VarReference (',' inVars+=VarReference)*)?
-	 ('out' outVars+=VarReference (',' outVars+=VarReference)*)?
-	 ('inout' inOutVars+=VarReference (',' inOutVars+=VarReference)*)?
+	 ('{' support=FunctionItem '}')? (sequential?='sequentially')?
+	 (vars+=VarReference (',' vars+=VarReference)*)?
 	 ('call' calls+=[Function|QualifiedName] (',' calls+=[Function|QualifiedName])* )? ';';
 
 Arg:
 	ArgDefinition | VarDefinition;
 
 ArgDefinition:
-	direction=Direction type=PtyOrArgType (multiple?='*')? name=ID ('=' defaultValue=STRING)?;
+	direction=Direction type=PtyOrArgType (multiple?='[*]')? name=ID ('=' defaultValue=STRING)?;
 
 VarDefinition:
 	direction=Direction type=SimpleType name=ID '{' (supports+=Item (',' supports+=Item)?)? '}';
 
 VarReference:
-	variable=[Variable|QualifiedName];
+	direction=Direction variable=[Variable|QualifiedName];
 
 // ----------------------------------------------------------------------------------------------------------------- //
 
 ItemFamily:
 	description=Comment?
 	'ItemFamily' name=ID
-	'on' support=ItemType ';';
+	'{' support=ItemType '}' ';';
 
 // ----------------------------------------------------------------------------------------------------------------- //
 
@@ -133,9 +131,7 @@ Service:
 OverrideFunction:
 	description=Comment?
 	'override' func=[Function|QualifiedName]
-	 ('in' inVars+=VarReference (',' inVars+=VarReference)*)?
-	 ('out' outVars+=VarReference (',' outVars+=VarReference)*)?
-	 ('inout' inOutVars+=VarReference (',' inOutVars+=VarReference)*)?
+	 (vars+=VarReference (',' vars+=VarReference)*)?
 	 ('call' calls+=[Function|QualifiedName] (',' calls+=[Function|QualifiedName])* )? ';';
 
 UnitTestFunction:
@@ -162,10 +158,8 @@ EntryPoint:
 	description=Comment?
 	('[' autoLoad=EntryPointAutoLoad ']')? 
 	location=EntryPointLocation name=ID  
-	('on' support=FunctionItem)? (sequential?='sequential')?
-	('in' inVars+=VarReference (',' inVars+=VarReference)*)?
-	('out' outVars+=VarReference (',' outVars+=VarReference)*)?
-	('inout' inOutVars+=VarReference (',' inOutVars+=VarReference)*)?
+	('{' support=FunctionItem '}')? (sequential?='sequential')?
+	(vars+=VarReference (',' vars+=VarReference)*)?
 	('call' calls+=[Function|QualifiedName] (',' calls+=[Function|QualifiedName])* )? ';';
 
 enum EntryPointLocation:
@@ -199,37 +193,31 @@ Reference:
 	target=[Referenceable|QualifiedName];
 
 enum SimpleType:
-	Boolean='bool' | ArrayBoolean='bool[*]' | Array2Boolean='bool[*,*]' |
-	String='string'| ArrayString='string[*]' |
-	Integer='int' | ArrayInteger='int[*]' | Array2Integer='int[*,*]' |
-	Int32='int32' | ArrayInt32='int32[*]' | Array2Int32='int32[*,*]' |
-	Int64='int64' | ArrayInt64='int64[*]' | Array2Int64='int64[*,*]' |
-	Real='real' | ArrayReal='real[*]' | Array2Real='real[*,*]' |
-	Real2='real[2]' | ArrayReal2='real[*,2]' | Array2Real2='real[*,*,2]' |
-	Real2x2='real[2,2]' | ArrayReal2x2='real[*,2,2]' | Array2Real2x2='real[*,*,2,2]' |
-	Real3='real[3]' | ArrayReal3='real[*,3]' | Array2Real3='real[*,*,3]' |
-	Real3x3='real[3,3]' | ArrayReal3x3='real[*,3,3]' | Array2Real3x3='real[*,*,3,3]';
+	Boolean='Bool' | ArrayBoolean='Bool[*]' | Array2Boolean='Bool[*,*]' |
+	String='String'| ArrayString='String[*]' |
+	Integer='Int' | ArrayInteger='Int[*]' | Array2Integer='Int[*,*]' |
+	Int32='Int32' | ArrayInt32='Int32[*]' | Array2Int32='Int32[*,*]' |
+	Int64='Int64' | ArrayInt64='Int64[*]' | Array2Int64='Int64[*,*]' |
+	Real='Real' | ArrayReal='Real[*]' | Array2Real='Real[*,*]' |
+	Real2='Real[2]' | ArrayReal2='Real[*,2]' | Array2Real2='Real[*,*,2]' |
+	Real2x2='Real[2,2]' | ArrayReal2x2='Real[*,2,2]' | Array2Real2x2='Real[*,*,2,2]' |
+	Real3='Real[3]' | ArrayReal3='Real[*,3]' | Array2Real3='Real[*,*,3]' |
+	Real3x3='Real[3,3]' | ArrayReal3x3='Real[*,3,3]' | Array2Real3x3='Real[*,*,3,3]';
 
 enum ItemType:
-	Item='item' | Cell='cell' | Node='node' | Face='face' | Particle='particle' | MatCell='matCell' | EnvCell='envCell' | ComponentCell='componentCell' |
-	AllEnvCell='allEnvCell' | DoF='DoF';
+	Item='Item' | Cell='Cell' | Node='Node' | Face='Face' | Particle='Particle' | MatCell='MatCell' | EnvCell='EnvCell' | ComponentCell='ComponentCell' |
+	AllEnvCell='EllEnvCell' | DoF='DoF';
 
 enum FunctionItemType:
-	Item='item' | Cell='cell' | Node='node' | Face='face' | Particle='particle' | MatCell='matCell' | EnvCell='envCell' | ComponentCell='componentCell' |
-	AllEnvCell='allEnvCell' | DoF='DoF' | ItemTypeSpecialized='itemTypeSpecialized';
+	Item='Item' | Cell='Cell' | Node='Node' | Face='Face' | Particle='Particle' | MatCell='MatCell' | EnvCell='EnvCell' | ComponentCell='ComponentCell' |
+	AllEnvCell='AllEnvCell' | DoF='DoF' | ItemTypeSpecialized='ItemTypeSpecialized';
 
 enum ItemGroupType:
-	NoItemGroup='noItemGroup' | ItemGroup='itemGroup' | CellGroup='cellGroup' | NodeGroup='nodeGroup' | FaceGroup='faceGroup' | ParticleGroup='particleGroup' |
-	MatCellGroup='matCellGroup' | EnvCellGroup='envCellGroup' | ComponentCellGroup='componentCellGroup' | AllEnvCellGroup='allEnvCellGroup';
-
-enum ReservedKeywords:
-	Cells='cells' | Nodes='nodes' | Faces='faces' | Sum='sum' | Legacy='legacy';
+	NoItemGroup='NoItemGroup' | ItemGroup='ItemGroup' | CellGroup='CellGroup' | NodeGroup='NodeGroup' | FaceGroup='FaceGroup' | ParticleGroup='ParticleGroup' |
+	MatCellGroup='MatCellGroup' | EnvCellGroup='EnvCellGroup' | ComponentCellGroup='ComponentCellGroup' | AllEnvCellGroup='AllEnvCellGroup';
 
 enum Direction:
 	in | out | inout;
-
-enum PtyMultiplicity:
-	ZeroOne='[0..1]' | OneOne='[1..1]' | ZeroStar='[0..*]' | OneStar='[1..*]';
 
 terminal DUMP:
 	'@dump';

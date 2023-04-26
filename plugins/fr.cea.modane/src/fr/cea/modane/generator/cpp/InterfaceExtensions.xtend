@@ -15,7 +15,6 @@ import fr.cea.modane.modane.Interface
 import fr.cea.modane.modane.VarDefinition
 import org.eclipse.xtext.generator.IFileSystemAccess
 
-import static extension fr.cea.modane.FunctionExtensions.*
 import static extension fr.cea.modane.ModaneElementExtensions.*
 import static extension fr.cea.modane.ModaneStringExtensions.*
 import static extension fr.cea.modane.generator.cpp.CppMethodContainerExtensions.*

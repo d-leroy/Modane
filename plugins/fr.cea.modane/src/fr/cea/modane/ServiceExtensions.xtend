@@ -16,7 +16,6 @@ import fr.cea.modane.modane.Variable
 import java.util.LinkedHashSet
 
 import static extension fr.cea.modane.InterfaceExtensions.*
-import static extension fr.cea.modane.FunctionExtensions.*
 
 class ServiceExtensions
 {

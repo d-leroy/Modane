@@ -38,9 +38,9 @@ class ExternalOpenXtextEditor implements IExternalJavaAction
 				Function case parameters.containsKey(PARAMETER_ARGS) : 
 					utils.openXtextEditor(o, ModanePackage::eINSTANCE.function_Args)
 				Function case parameters.containsKey(PARAMETER_VARS) : 
-					utils.openXtextEditor(o, ModanePackage::eINSTANCE.function_InVars)
+					utils.openXtextEditor(o, ModanePackage::eINSTANCE.function_Vars)
 				EntryPoint case parameters.containsKey(PARAMETER_VARS) : 
-					utils.openXtextEditor(o, ModanePackage::eINSTANCE.entryPoint_InVars)
+					utils.openXtextEditor(o, ModanePackage::eINSTANCE.entryPoint_Vars)
 				default:
 					utils.openXtextEditor(o)
 			}

@@ -46,7 +46,6 @@ import org.eclipse.emf.ecore.EStructuralFeature
 import org.eclipse.xtext.scoping.IScopeProvider
 import org.eclipse.xtext.validation.Check
 
-import static extension fr.cea.modane.FunctionExtensions.*
 import static extension fr.cea.modane.InterfaceExtensions.*
 import static extension fr.cea.modane.generator.VariableExtensions.*
 import static extension fr.cea.modane.ModaneElementExtensions.*
@@ -531,36 +530,27 @@ class ModaneValidator extends UniqueNameValidator
 	}
 
 	@Check
-	def multipleIdenticalVarRef(EntryPoint ep) {
-		return multipleIdenticalVarRef(ep.inVars, Direction::IN, ModanePackage.Literals.ENTRY_POINT__IN_VARS) &&
-				multipleIdenticalVarRef(ep.outVars, Direction::OUT, ModanePackage.Literals.ENTRY_POINT__OUT_VARS) &&
-				multipleIdenticalVarRef(ep.inOutVars, Direction::INOUT, ModanePackage.Literals.ENTRY_POINT__IN_OUT_VARS)
-	}
+	def multipleIdenticalVarRef(EntryPoint ep) { return multipleIdenticalVarRef(ep.vars, ModanePackage.Literals.ENTRY_POINT__VARS) }
 
 	@Check
 	def multipleIdenticalVarRef(Function f)
 	{
-		return multipleIdenticalVarRef(f.inVars, Direction::IN, ModanePackage.Literals.FUNCTION__IN_VARS) &&
-				multipleIdenticalVarRef(f.outVars, Direction::OUT, ModanePackage.Literals.FUNCTION__OUT_VARS) &&
-				multipleIdenticalVarRef(f.inOutVars, Direction::INOUT, ModanePackage.Literals.FUNCTION__IN_OUT_VARS)
+		val vars =  f.vars.filter(VarReference)
+		return multipleIdenticalVarRef(vars, ModanePackage.Literals.FUNCTION__VARS)
 	}
 
 	@Check
-	def multipleIdenticalVarRef(OverrideFunction f) {
-		return multipleIdenticalVarRef(f.inVars, Direction::IN, ModanePackage.Literals.OVERRIDE_FUNCTION__IN_VARS) &&
-				multipleIdenticalVarRef(f.outVars, Direction::OUT, ModanePackage.Literals.OVERRIDE_FUNCTION__OUT_VARS) &&
-				multipleIdenticalVarRef(f.inOutVars, Direction::INOUT, ModanePackage.Literals.OVERRIDE_FUNCTION__IN_OUT_VARS)
-	}
+	def multipleIdenticalVarRef(OverrideFunction f) { return multipleIdenticalVarRef(f.vars, ModanePackage.Literals.OVERRIDE_FUNCTION__VARS) }
 
-	private def multipleIdenticalVarRef(Iterable<VarReference> vars, Direction direction, EReference literal)
+	private def multipleIdenticalVarRef(Iterable<VarReference> vars, EReference literal)
 	{
 		var ok = true
 		for (i : 0..<vars.length)
 		{
 			val v1 = vars.get(i)
-			if (vars.exists[v2 | v1 != v2 && v1.variable == v2.variable])
+			if (vars.exists[v2 | v1 != v2 && v1.direction == v2.direction && v1.variable == v2.variable])
 			{
-				warning("La variable '" + v1.variable.name + "' est référencée plusieurs fois en '" + direction.literal + "'", literal, i)
+				warning("La variable '" + v1.variable.name + "' est référencée plusieurs fois en '" + v1.direction.literal + "'", literal, i)
 				ok = false
 			}
 		}

@@ -30,9 +30,7 @@ class ModaneOutlineTreeProvider extends DefaultOutlineTreeProvider
 	
 	protected def _createChildren(IOutlineNode parentNode, Function f)
 	{
-		f.inVars.forEach[elt | createNode(parentNode, elt)]
-		f.outVars.forEach[elt | createNode(parentNode, elt)]
-		f.inOutVars.forEach[elt | createNode(parentNode, elt)]
+		f.vars.forEach[elt | createNode(parentNode, elt)]
 		f.args.forEach[elt | createNode(parentNode, elt)]
 	}
 	
