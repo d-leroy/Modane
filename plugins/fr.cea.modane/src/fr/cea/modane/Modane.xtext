@@ -89,7 +89,7 @@ Function:
 	'(' (args+=Arg (',' args+=Arg)*)? ')'
 	 ('{' support=FunctionItem '}')? (sequential?='sequentially')?
 	 (vars+=VarReference (',' vars+=VarReference)*)?
-	 ('call' calls+=[Function|QualifiedName] (',' calls+=[Function|QualifiedName])* )? ';';
+	 (calls+=FunctionReference (',' calls+=FunctionReference)* )? ';';
 
 Arg:
 	ArgDefinition | VarDefinition;
@@ -102,6 +102,9 @@ VarDefinition:
 
 VarReference:
 	direction=Direction variable=[Variable|QualifiedName];
+
+FunctionReference:
+	'call' call=[Function|QualifiedName];
 
 // ----------------------------------------------------------------------------------------------------------------- //
 
@@ -132,7 +135,7 @@ OverrideFunction:
 	description=Comment?
 	'override' func=[Function|QualifiedName]
 	 (vars+=VarReference (',' vars+=VarReference)*)?
-	 ('call' calls+=[Function|QualifiedName] (',' calls+=[Function|QualifiedName])* )? ';';
+	 (calls+=FunctionReference (',' calls+=FunctionReference)* )? ';';
 
 UnitTestFunction:
 	description=Comment?
@@ -160,7 +163,7 @@ EntryPoint:
 	location=EntryPointLocation name=ID  
 	('{' support=FunctionItem '}')? (sequential?='sequential')?
 	(vars+=VarReference (',' vars+=VarReference)*)?
-	('call' calls+=[Function|QualifiedName] (',' calls+=[Function|QualifiedName])* )? ';';
+	(calls+=FunctionReference (',' calls+=FunctionReference)* )? ';';
 
 enum EntryPointLocation:
 	ComputeLoop='@ComputeLoop' | OnMeshChanged='@OnMeshChanged' | OnMeshRefinement='@OnMeshRefinement' | Init='@Init' | ContinueInit='@ContinueInit' | StartInit='@StartInit' | Restore='@Restore' | Build='@Build' | Exit='@Exit';

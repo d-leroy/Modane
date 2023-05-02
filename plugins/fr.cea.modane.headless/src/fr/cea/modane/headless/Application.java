@@ -164,12 +164,19 @@ public class Application implements IApplication {
 					if (generateAllModaneFiles || modaneFileURIs.stream()
 							.anyMatch(uri -> uri.toFileString().equals(fileURI.toFileString()))) {
 						resourcesToGenerate.add(modaneModelReader.readModel(fileURI).eResource());
+						
 					} else {
 						modaneModelReader.readModel(fileURI);
 					}
 				});
 				modaneModelReader.resolveAll();
 				System.out.println(">>>>> Modane models loaded");
+				System.out.println("    List of models:");
+				final URI base = URI.createFileURI(new File(modaneDir).getAbsolutePath());
+				resourcesToGenerate.forEach(r -> {
+					final URI relative = r.getURI().deresolve(base);
+					System.out.println("        - " + relative.path());
+				});
 			}
 
 			if ((generateCppFromMdzip || generateCppFromUml || generateCppFromModane) && !resourcesToGenerate.isEmpty()) {

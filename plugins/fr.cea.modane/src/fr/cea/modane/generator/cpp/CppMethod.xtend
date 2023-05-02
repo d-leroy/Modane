@@ -11,7 +11,6 @@ package fr.cea.modane.generator.cpp
 
 import fr.cea.modane.modane.Arg
 import fr.cea.modane.modane.ArgDefinition
-import fr.cea.modane.modane.Direction
 import fr.cea.modane.modane.EntryPoint
 import fr.cea.modane.modane.Function
 import fr.cea.modane.modane.FunctionItemType
@@ -59,7 +58,7 @@ class FunctionCppMethod implements CppMethod
 	override getContainer() { container }
 	override getArgDefinitions() { f.args.filter(ArgDefinition) }
 	override getAllArgs() { f.args }
-	override getCalls() { f.calls }
+	override getCalls() { f.calls.map[c|c.call] }
 	override getReturnType() { f.type }
 	override isMultiple() { f.multiple }
 	override getSupport() { f.support === null ? null : f.support.type }
@@ -85,7 +84,7 @@ class OverrideFunctionCppMethod extends FunctionCppMethod
 	}
 	
 	override getDescription() { of.fromDescription }
-	override getCalls() { of.calls }
+	override getCalls() { of.calls.map[c|c.call] }
 	override isOverride() { true }	
 	
 	override getAllVars() 
@@ -114,7 +113,7 @@ class EntryPointCppMethod implements CppMethod
 	override getContainer() { container }
 	override getAllArgs() { newArrayList }
 	override getArgDefinitions() { newArrayList }
-	override getCalls() { ep.calls }
+	override getCalls() { ep.calls.map[c|c.call] }
 	override getReturnType() { null }	
 	override isMultiple() { false }
 	override getSupport() { ep.support === null ? null : ep.support.type }

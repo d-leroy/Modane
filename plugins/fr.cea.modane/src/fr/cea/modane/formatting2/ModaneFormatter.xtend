@@ -3,48 +3,199 @@
  */
 package fr.cea.modane.formatting2
 
+import fr.cea.modane.modane.ArgDefinition
 import fr.cea.modane.modane.Comment
-import fr.cea.modane.modane.Legacy
+import fr.cea.modane.modane.EntryPoint
+import fr.cea.modane.modane.Enumeration
+import fr.cea.modane.modane.EnumerationLiteral
+import fr.cea.modane.modane.Function
+import fr.cea.modane.modane.FunctionReference
+import fr.cea.modane.modane.Interface
+import fr.cea.modane.modane.ItemFamily
 import fr.cea.modane.modane.ModaneElement
 import fr.cea.modane.modane.ModaneModel
+import fr.cea.modane.modane.ModanePackage
+import fr.cea.modane.modane.Module
+import fr.cea.modane.modane.OverrideFunction
+import fr.cea.modane.modane.Pty
+import fr.cea.modane.modane.Service
+import fr.cea.modane.modane.Struct
+import fr.cea.modane.modane.VarDefinition
+import fr.cea.modane.modane.VarReference
 import fr.cea.modane.modane.Variable
+import java.util.function.Predicate
+import org.eclipse.emf.common.util.EList
+import org.eclipse.emf.ecore.EObject
 import org.eclipse.xtext.formatting2.AbstractFormatter2
 import org.eclipse.xtext.formatting2.IFormattableDocument
 
 class ModaneFormatter extends AbstractFormatter2 
 {
-	def dispatch void format(ModaneModel elt, extension IFormattableDocument document) 
+	def dispatch void format(ModaneModel elt, extension IFormattableDocument document)
 	{
-		elt.allRegionsFor.keywords(';').forEach[x|x.surround[noSpace]]
-		elt.allRegionsFor.keywords('[').forEach[x|x.append[noSpace]]
-		elt.allRegionsFor.keywords(']').forEach[x|x.prepend[noSpace] x.append[setNewLines(1)]]
+		elt.allRegionsFor.keywords(';').forEach[prepend[noSpace]]
+		elt.allRegionsFor.keywords(',').forEach[prepend[noSpace]]
+		elt.allRegionsFor.keywords('[*]').forEach[prepend[noSpace]]
 		elt.elements.forEach[format]
+		elt.eAllContents.filter(Comment).forEach[format]
 	}
 
 	def dispatch void format(ModaneElement elt, extension IFormattableDocument document) 
 	{
 		elt.prepend[setNewLines(2)]
 
-		if (! (elt instanceof Variable || elt instanceof Legacy))
+		if (elt instanceof Module ||
+			elt instanceof Service ||
+			elt instanceof Interface ||
+			elt instanceof Struct)
 		{
-			elt.allRegionsFor.keywords(';').forEach[x|x.append[setNewLines(1)]]
-			elt.allRegionsFor.keywords('(').forEach[x|x.append[noSpace]]
-			elt.allRegionsFor.keywords(')').forEach[x|x.prepend[noSpace]]
-			elt.allRegionsFor.keywords(',').forEach[x|x.prepend[noSpace]]
-
 			val open = elt.regionFor.keyword('{')
 			val close = elt.regionFor.keyword('}')
-			open.surround[setNewLines(1)]
+			open.prepend[newLine]
+			close.prepend[newLine]
 			interior(open,close)[indent]
 		}
-
-		elt.eContents.forEach[format]
+		else
+		if (elt instanceof Variable)
+		{
+			elt.regionFor.keyword('{').append[oneSpace]
+			elt.regionFor.keyword('}').prepend[oneSpace]
+			elt.regionFor.keyword('@axlname').prepend[oneSpace]
+			elt.regionFor.keyword('(').append[noSpace]
+			elt.regionFor.keyword(')').prepend[noSpace]
+			elt.regionFor.features(ModanePackage.Literals.VARIABLE__DUMP,
+				ModanePackage.Literals.VARIABLE__RESTORE,
+				ModanePackage.Literals.VARIABLE__EXECUTION_DEPEND,
+				ModanePackage.Literals.VARIABLE__NEED_SYNC).forEach[prepend[oneSpace]]
+		}
+		else
+		if (elt instanceof ItemFamily)
+		{
+			elt.regionFor.keyword('{').append[oneSpace]
+			elt.regionFor.keyword('}').prepend[oneSpace]
+		}
+		else
+		if (elt instanceof Enumeration)
+		{
+			val open = elt.regionFor.keyword('{')
+			val close = elt.regionFor.keyword('}')
+			open.prepend[newLine]
+			close.prepend[newLine]
+			interior(open,close)[indent]
+		}
+	
+		elt.eContents.filter[!(it instanceof Comment)].forEach[format]
 	}
 
-	def dispatch void format(Comment elt, extension IFormattableDocument document) 
+	def dispatch void format(Comment elt, extension IFormattableDocument document)
 	{
 		elt.append[newLine]
 		val eObjectRegion = regionForEObject(elt)
 		addReplacer(new DoxCommentReplacer(eObjectRegion))
+	}
+	
+	def dispatch void format(Pty elt, extension IFormattableDocument document)
+	{
+		elt.addNewLine(document)
+	}
+	
+	def dispatch void format(EntryPoint elt, extension IFormattableDocument document)
+	{
+		elt.addNewLine(document)
+		elt.regionFor.keyword('[').append[noSpace]
+		elt.regionFor.keyword(']').prepend[noSpace].append[newLine]
+		elt.regionFor.feature(ModanePackage.Literals.ENTRY_POINT__LOCATION).append[newLine]
+		elt.allRegionsFor.keyword(',').prepend[noSpace]
+		
+		elt.vars.indentList(document)
+		elt.vars.forEach[format]
+		
+		elt.calls.indentList(document)
+		elt.calls.forEach[format]
+	}
+	
+	def dispatch void format(OverrideFunction elt, extension IFormattableDocument document)
+	{
+		elt.addNewLine(document)
+		
+		elt.vars.indentList(document)
+		elt.vars.forEach[format]
+		
+		elt.calls.indentList(document)
+		elt.calls.forEach[format]
+	}
+	
+	def dispatch void format(Function elt, extension IFormattableDocument document)
+	{
+		elt.addNewLine(document)
+		elt.regionFor.keyword('(').surround[noSpace]
+		elt.regionFor.keyword(')').prepend[noSpace]
+		
+		elt.args.indentList([size > 1], document)
+		elt.args.forEach[format]
+		
+		elt.vars.indentList(document)
+		elt.vars.forEach[format]
+		
+		elt.calls.indentList(document)
+		elt.calls.forEach[format]
+		
+		createHiddenRegionFormattingMerger
+	}
+	
+	def dispatch void format(ArgDefinition elt, extension IFormattableDocument document)
+	{
+		val args = (elt.eContainer as Function).args
+		if (args.indexOf(elt) > 0) {
+			elt.prepend[newLine]
+		}
+		
+		elt.regionFor.keyword('=').surround[oneSpace]
+	}
+	
+	def dispatch void format(VarDefinition elt, extension IFormattableDocument document)
+	{
+		elt.prepend[newLine]
+		
+		elt.regionFor.keyword('{').surround[oneSpace]
+		elt.regionFor.keyword('}').prepend[oneSpace]
+	
+	}
+	
+	def dispatch void format(VarReference elt, extension IFormattableDocument document)
+	{
+		elt.prepend[newLine]
+	}
+	
+	def dispatch void format(FunctionReference elt, extension IFormattableDocument document)
+	{
+		elt.prepend[newLine]
+	}
+	
+	def dispatch void format(EnumerationLiteral elt, extension IFormattableDocument document)
+	{
+		elt.prepend[newLine]
+	}
+	
+	private def addNewLine(EObject elt, extension IFormattableDocument document) {
+		if (elt.eContainer.eContents.indexOf(elt) == 0) {
+			elt.prepend[newLine]
+		} else {
+			elt.prepend[setNewLines(2)]
+		}
+	}
+	
+	private def <T extends EObject> indentList(EList<T> l, Predicate<EList<T>> conditional, extension IFormattableDocument document)
+	{
+		if (conditional.test(l)) {
+			val begin = l.head.previousHiddenRegion.previousSemanticRegion
+			val end = l.last.nextHiddenRegion.nextSemanticRegion
+			interior(begin, end)[indent]
+		}
+	}
+	
+	private def <T extends EObject> indentList(EList<T> l, extension IFormattableDocument document)
+	{
+		indentList(l, [size > 0], document)
 	}
 }

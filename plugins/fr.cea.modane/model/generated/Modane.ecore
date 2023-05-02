@@ -53,9 +53,10 @@
   <eClassifiers xsi:type="ecore:EClass" name="Pty" eSuperTypes="#//NamedElement">
     <eStructuralFeatures xsi:type="ecore:EReference" name="description" eType="#//Comment"
         containment="true"/>
-    <eStructuralFeatures xsi:type="ecore:EAttribute" name="multiplicity" eType="#//PtyMultiplicity"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="optional" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EBoolean"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="type" eType="#//PtyOrArgType"
         containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="multiple" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EBoolean"/>
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="defaultValue" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="namefr" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="categories" unique="false"
@@ -82,14 +83,10 @@
     <eStructuralFeatures xsi:type="ecore:EReference" name="support" eType="#//FunctionItem"
         containment="true"/>
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="sequential" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EBoolean"/>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="inVars" upperBound="-1"
-        eType="#//VarReference" containment="true"/>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="outVars" upperBound="-1"
-        eType="#//VarReference" containment="true"/>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="inOutVars" upperBound="-1"
-        eType="#//VarReference" containment="true"/>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="calls" unique="false" upperBound="-1"
-        eType="#//Function"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="vars" upperBound="-1" eType="#//VarReference"
+        containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="calls" upperBound="-1"
+        eType="#//FunctionReference" containment="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="Arg" eSuperTypes="#//NamedElement">
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="direction" eType="#//Direction"/>
@@ -106,7 +103,11 @@
         eType="#//Item" containment="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="VarReference">
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="direction" eType="#//Direction"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="variable" eType="#//Variable"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="FunctionReference">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="call" eType="#//Function"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="ItemFamily" eSuperTypes="#//ModaneElement">
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="support" eType="#//ItemType"/>
@@ -138,14 +139,10 @@
     <eStructuralFeatures xsi:type="ecore:EReference" name="description" eType="#//Comment"
         containment="true"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="func" eType="#//Function"/>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="inVars" upperBound="-1"
-        eType="#//VarReference" containment="true"/>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="outVars" upperBound="-1"
-        eType="#//VarReference" containment="true"/>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="inOutVars" upperBound="-1"
-        eType="#//VarReference" containment="true"/>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="calls" unique="false" upperBound="-1"
-        eType="#//Function"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="vars" upperBound="-1" eType="#//VarReference"
+        containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="calls" upperBound="-1"
+        eType="#//FunctionReference" containment="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="UnitTestFunction" eSuperTypes="#//NamedElement">
     <eStructuralFeatures xsi:type="ecore:EReference" name="description" eType="#//Comment"
@@ -170,14 +167,10 @@
     <eStructuralFeatures xsi:type="ecore:EReference" name="support" eType="#//FunctionItem"
         containment="true"/>
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="sequential" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EBoolean"/>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="inVars" upperBound="-1"
-        eType="#//VarReference" containment="true"/>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="outVars" upperBound="-1"
-        eType="#//VarReference" containment="true"/>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="inOutVars" upperBound="-1"
-        eType="#//VarReference" containment="true"/>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="calls" unique="false" upperBound="-1"
-        eType="#//Function"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="vars" upperBound="-1" eType="#//VarReference"
+        containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="calls" upperBound="-1"
+        eType="#//FunctionReference" containment="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EEnum" name="EntryPointLocation">
     <eLiterals name="ComputeLoop" literal="@ComputeLoop"/>
@@ -215,89 +208,76 @@
     <eStructuralFeatures xsi:type="ecore:EReference" name="target" eType="#//Referenceable"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EEnum" name="SimpleType">
-    <eLiterals name="Boolean" literal="bool"/>
-    <eLiterals name="ArrayBoolean" value="1" literal="bool[*]"/>
-    <eLiterals name="Array2Boolean" value="2" literal="bool[*,*]"/>
-    <eLiterals name="String" value="3" literal="string"/>
-    <eLiterals name="ArrayString" value="4" literal="string[*]"/>
-    <eLiterals name="Integer" value="5" literal="int"/>
-    <eLiterals name="ArrayInteger" value="6" literal="int[*]"/>
-    <eLiterals name="Array2Integer" value="7" literal="int[*,*]"/>
-    <eLiterals name="Int32" value="8" literal="int32"/>
-    <eLiterals name="ArrayInt32" value="9" literal="int32[*]"/>
-    <eLiterals name="Array2Int32" value="10" literal="int32[*,*]"/>
-    <eLiterals name="Int64" value="11" literal="int64"/>
-    <eLiterals name="ArrayInt64" value="12" literal="int64[*]"/>
-    <eLiterals name="Array2Int64" value="13" literal="int64[*,*]"/>
-    <eLiterals name="Real" value="14" literal="real"/>
-    <eLiterals name="ArrayReal" value="15" literal="real[*]"/>
-    <eLiterals name="Array2Real" value="16" literal="real[*,*]"/>
-    <eLiterals name="Real2" value="17" literal="real[2]"/>
-    <eLiterals name="ArrayReal2" value="18" literal="real[*,2]"/>
-    <eLiterals name="Array2Real2" value="19" literal="real[*,*,2]"/>
-    <eLiterals name="Real2x2" value="20" literal="real[2,2]"/>
-    <eLiterals name="ArrayReal2x2" value="21" literal="real[*,2,2]"/>
-    <eLiterals name="Array2Real2x2" value="22" literal="real[*,*,2,2]"/>
-    <eLiterals name="Real3" value="23" literal="real[3]"/>
-    <eLiterals name="ArrayReal3" value="24" literal="real[*,3]"/>
-    <eLiterals name="Array2Real3" value="25" literal="real[*,*,3]"/>
-    <eLiterals name="Real3x3" value="26" literal="real[3,3]"/>
-    <eLiterals name="ArrayReal3x3" value="27" literal="real[*,3,3]"/>
-    <eLiterals name="Array2Real3x3" value="28" literal="real[*,*,3,3]"/>
+    <eLiterals name="Boolean" literal="Bool"/>
+    <eLiterals name="ArrayBoolean" value="1" literal="Bool[*]"/>
+    <eLiterals name="Array2Boolean" value="2" literal="Bool[*,*]"/>
+    <eLiterals name="String" value="3" literal="String"/>
+    <eLiterals name="ArrayString" value="4" literal="String[*]"/>
+    <eLiterals name="Integer" value="5" literal="Int"/>
+    <eLiterals name="ArrayInteger" value="6" literal="Int[*]"/>
+    <eLiterals name="Array2Integer" value="7" literal="Int[*,*]"/>
+    <eLiterals name="Int32" value="8" literal="Int32"/>
+    <eLiterals name="ArrayInt32" value="9" literal="Int32[*]"/>
+    <eLiterals name="Array2Int32" value="10" literal="Int32[*,*]"/>
+    <eLiterals name="Int64" value="11" literal="Int64"/>
+    <eLiterals name="ArrayInt64" value="12" literal="Int64[*]"/>
+    <eLiterals name="Array2Int64" value="13" literal="Int64[*,*]"/>
+    <eLiterals name="Real" value="14" literal="Real"/>
+    <eLiterals name="ArrayReal" value="15" literal="Real[*]"/>
+    <eLiterals name="Array2Real" value="16" literal="Real[*,*]"/>
+    <eLiterals name="Real2" value="17" literal="Real[2]"/>
+    <eLiterals name="ArrayReal2" value="18" literal="Real[*,2]"/>
+    <eLiterals name="Array2Real2" value="19" literal="Real[*,*,2]"/>
+    <eLiterals name="Real2x2" value="20" literal="Real[2,2]"/>
+    <eLiterals name="ArrayReal2x2" value="21" literal="Real[*,2,2]"/>
+    <eLiterals name="Array2Real2x2" value="22" literal="Real[*,*,2,2]"/>
+    <eLiterals name="Real3" value="23" literal="Real[3]"/>
+    <eLiterals name="ArrayReal3" value="24" literal="Real[*,3]"/>
+    <eLiterals name="Array2Real3" value="25" literal="Real[*,*,3]"/>
+    <eLiterals name="Real3x3" value="26" literal="Real[3,3]"/>
+    <eLiterals name="ArrayReal3x3" value="27" literal="Real[*,3,3]"/>
+    <eLiterals name="Array2Real3x3" value="28" literal="Real[*,*,3,3]"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EEnum" name="ItemType">
-    <eLiterals name="Item" literal="item"/>
-    <eLiterals name="Cell" value="1" literal="cell"/>
-    <eLiterals name="Node" value="2" literal="node"/>
-    <eLiterals name="Face" value="3" literal="face"/>
-    <eLiterals name="Particle" value="4" literal="particle"/>
-    <eLiterals name="MatCell" value="5" literal="matCell"/>
-    <eLiterals name="EnvCell" value="6" literal="envCell"/>
-    <eLiterals name="ComponentCell" value="7" literal="componentCell"/>
-    <eLiterals name="AllEnvCell" value="8" literal="allEnvCell"/>
+    <eLiterals name="Item" literal="Item"/>
+    <eLiterals name="Cell" value="1" literal="Cell"/>
+    <eLiterals name="Node" value="2" literal="Node"/>
+    <eLiterals name="Face" value="3" literal="Face"/>
+    <eLiterals name="Particle" value="4" literal="Particle"/>
+    <eLiterals name="MatCell" value="5" literal="MatCell"/>
+    <eLiterals name="EnvCell" value="6" literal="EnvCell"/>
+    <eLiterals name="ComponentCell" value="7" literal="ComponentCell"/>
+    <eLiterals name="AllEnvCell" value="8" literal="EllEnvCell"/>
     <eLiterals name="DoF" value="9" literal="DoF"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EEnum" name="FunctionItemType">
-    <eLiterals name="Item" literal="item"/>
-    <eLiterals name="Cell" value="1" literal="cell"/>
-    <eLiterals name="Node" value="2" literal="node"/>
-    <eLiterals name="Face" value="3" literal="face"/>
-    <eLiterals name="Particle" value="4" literal="particle"/>
-    <eLiterals name="MatCell" value="5" literal="matCell"/>
-    <eLiterals name="EnvCell" value="6" literal="envCell"/>
-    <eLiterals name="ComponentCell" value="7" literal="componentCell"/>
-    <eLiterals name="AllEnvCell" value="8" literal="allEnvCell"/>
+    <eLiterals name="Item" literal="Item"/>
+    <eLiterals name="Cell" value="1" literal="Cell"/>
+    <eLiterals name="Node" value="2" literal="Node"/>
+    <eLiterals name="Face" value="3" literal="Face"/>
+    <eLiterals name="Particle" value="4" literal="Particle"/>
+    <eLiterals name="MatCell" value="5" literal="MatCell"/>
+    <eLiterals name="EnvCell" value="6" literal="EnvCell"/>
+    <eLiterals name="ComponentCell" value="7" literal="ComponentCell"/>
+    <eLiterals name="AllEnvCell" value="8" literal="AllEnvCell"/>
     <eLiterals name="DoF" value="9" literal="DoF"/>
-    <eLiterals name="ItemTypeSpecialized" value="10" literal="itemTypeSpecialized"/>
+    <eLiterals name="ItemTypeSpecialized" value="10" literal="ItemTypeSpecialized"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EEnum" name="ItemGroupType">
-    <eLiterals name="NoItemGroup" literal="noItemGroup"/>
-    <eLiterals name="ItemGroup" value="1" literal="itemGroup"/>
-    <eLiterals name="CellGroup" value="2" literal="cellGroup"/>
-    <eLiterals name="NodeGroup" value="3" literal="nodeGroup"/>
-    <eLiterals name="FaceGroup" value="4" literal="faceGroup"/>
-    <eLiterals name="ParticleGroup" value="5" literal="particleGroup"/>
-    <eLiterals name="MatCellGroup" value="6" literal="matCellGroup"/>
-    <eLiterals name="EnvCellGroup" value="7" literal="envCellGroup"/>
-    <eLiterals name="ComponentCellGroup" value="8" literal="componentCellGroup"/>
-    <eLiterals name="AllEnvCellGroup" value="9" literal="allEnvCellGroup"/>
-  </eClassifiers>
-  <eClassifiers xsi:type="ecore:EEnum" name="ReservedKeywords">
-    <eLiterals name="Cells" literal="cells"/>
-    <eLiterals name="Nodes" value="1" literal="nodes"/>
-    <eLiterals name="Faces" value="2" literal="faces"/>
-    <eLiterals name="Sum" value="3" literal="sum"/>
-    <eLiterals name="Legacy" value="4" literal="legacy"/>
+    <eLiterals name="NoItemGroup" literal="NoItemGroup"/>
+    <eLiterals name="ItemGroup" value="1" literal="ItemGroup"/>
+    <eLiterals name="CellGroup" value="2" literal="CellGroup"/>
+    <eLiterals name="NodeGroup" value="3" literal="NodeGroup"/>
+    <eLiterals name="FaceGroup" value="4" literal="FaceGroup"/>
+    <eLiterals name="ParticleGroup" value="5" literal="ParticleGroup"/>
+    <eLiterals name="MatCellGroup" value="6" literal="MatCellGroup"/>
+    <eLiterals name="EnvCellGroup" value="7" literal="EnvCellGroup"/>
+    <eLiterals name="ComponentCellGroup" value="8" literal="ComponentCellGroup"/>
+    <eLiterals name="AllEnvCellGroup" value="9" literal="AllEnvCellGroup"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EEnum" name="Direction">
     <eLiterals name="in" literal="in"/>
     <eLiterals name="out" value="1" literal="out"/>
     <eLiterals name="inout" value="2" literal="inout"/>
-  </eClassifiers>
-  <eClassifiers xsi:type="ecore:EEnum" name="PtyMultiplicity">
-    <eLiterals name="ZeroOne" literal="[0..1]"/>
-    <eLiterals name="OneOne" value="1" literal="[1..1]"/>
-    <eLiterals name="ZeroStar" value="2" literal="[0..*]"/>
-    <eLiterals name="OneStar" value="3" literal="[1..*]"/>
   </eClassifiers>
 </ecore:EPackage>

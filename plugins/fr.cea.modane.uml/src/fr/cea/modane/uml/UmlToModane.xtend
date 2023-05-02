@@ -21,6 +21,7 @@ import fr.cea.modane.modane.EntryPoint
 import fr.cea.modane.modane.Enumeration
 import fr.cea.modane.modane.EnumerationLiteral
 import fr.cea.modane.modane.Function
+import fr.cea.modane.modane.FunctionReference
 import fr.cea.modane.modane.Interface
 import fr.cea.modane.modane.ItemFamily
 import fr.cea.modane.modane.ItemGroupType
@@ -82,7 +83,7 @@ class UmlToModane
 	extension OperationExtensions oe
 	extension EnumerationLiteralExtensions ele
 	
-	Set<URI> resourceURICache
+	Set<URI> resourceURICache = newHashSet
 	boolean obfuscate = false
 	
 	def setResourceURICache(Set<URI> cache) {
@@ -376,6 +377,7 @@ class UmlToModane
 		func = interfaceFunc
 		for (v : o.funcInNotOutVars) vars += v.toUmlClass.toVariable.toVarReference(true, false)
 		for (v : o.funcOutVars) vars += v.toUmlClass.toVariable.toVarReference(o.funcInVars.contains(v), true)
+		for (cf : o.funcCalledFuncs) calls += cf.toOperation.toFunction.toFunctionReference
 	}
 
 	private def EntryPoint create ModaneFactory::eINSTANCE.createEntryPoint toEntryPoint(Operation o)
@@ -386,7 +388,7 @@ class UmlToModane
 		autoLoad = o.epAutoLoad
 		for (v : o.epInNotOutVars) vars += v.toUmlClass.toVariable.toVarReference(true, false)
 		for (v : o.epOutVars) vars += v.toUmlClass.toVariable.toVarReference(o.epInVars.contains(v), true)
-		for (cf : o.epCalledFuncs) calls += cf.toOperation.toFunction
+		for (cf : o.epCalledFuncs) calls += cf.toOperation.toFunction.toFunctionReference
 	}
 
 	private def Function create ModaneFactory::eINSTANCE.createFunction toFunction(Operation o)
@@ -410,7 +412,7 @@ class UmlToModane
 			else vars += c.toVariable.toVarReference(isIn, true)
 		}
 		for ( p : o.inOutParameters) args += p.toArgument
-		for (cf : o.funcCalledFuncs) calls += cf.toOperation.toFunction
+		for (cf : o.funcCalledFuncs) calls += cf.toOperation.toFunction.toFunctionReference
 
 		// s'il y a un paramètre retour => type de la fonction
 		if (o.hasReturnParameter)
@@ -418,6 +420,11 @@ class UmlToModane
 			type = o.returnParameter.type.toArgType.getActualType(o.returnParameter.upperBound)
 			multiple = o.returnParameter.upperBound.getActualMultiplicity(type)
 		}
+	}
+	
+	private def FunctionReference create ModaneFactory::eINSTANCE.createFunctionReference toFunctionReference(Function f)
+	{
+		call = f
 	}
 	
 	def getActualType(PtyOrArgType it, int upperBound) {

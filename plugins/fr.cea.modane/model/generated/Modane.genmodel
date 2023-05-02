@@ -98,23 +98,10 @@
       <genEnumLiterals ecoreEnumLiteral="Modane.ecore#//ItemGroupType/ComponentCellGroup"/>
       <genEnumLiterals ecoreEnumLiteral="Modane.ecore#//ItemGroupType/AllEnvCellGroup"/>
     </genEnums>
-    <genEnums typeSafeEnumCompatible="false" ecoreEnum="Modane.ecore#//ReservedKeywords">
-      <genEnumLiterals ecoreEnumLiteral="Modane.ecore#//ReservedKeywords/Cells"/>
-      <genEnumLiterals ecoreEnumLiteral="Modane.ecore#//ReservedKeywords/Nodes"/>
-      <genEnumLiterals ecoreEnumLiteral="Modane.ecore#//ReservedKeywords/Faces"/>
-      <genEnumLiterals ecoreEnumLiteral="Modane.ecore#//ReservedKeywords/Sum"/>
-      <genEnumLiterals ecoreEnumLiteral="Modane.ecore#//ReservedKeywords/Legacy"/>
-    </genEnums>
     <genEnums typeSafeEnumCompatible="false" ecoreEnum="Modane.ecore#//Direction">
       <genEnumLiterals ecoreEnumLiteral="Modane.ecore#//Direction/in"/>
       <genEnumLiterals ecoreEnumLiteral="Modane.ecore#//Direction/out"/>
       <genEnumLiterals ecoreEnumLiteral="Modane.ecore#//Direction/inout"/>
-    </genEnums>
-    <genEnums typeSafeEnumCompatible="false" ecoreEnum="Modane.ecore#//PtyMultiplicity">
-      <genEnumLiterals ecoreEnumLiteral="Modane.ecore#//PtyMultiplicity/ZeroOne"/>
-      <genEnumLiterals ecoreEnumLiteral="Modane.ecore#//PtyMultiplicity/OneOne"/>
-      <genEnumLiterals ecoreEnumLiteral="Modane.ecore#//PtyMultiplicity/ZeroStar"/>
-      <genEnumLiterals ecoreEnumLiteral="Modane.ecore#//PtyMultiplicity/OneStar"/>
     </genEnums>
     <genClasses ecoreClass="Modane.ecore#//ModaneModel">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Modane.ecore#//ModaneModel/description"/>
@@ -158,8 +145,9 @@
     </genClasses>
     <genClasses ecoreClass="Modane.ecore#//Pty">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Modane.ecore#//Pty/description"/>
-      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Modane.ecore#//Pty/multiplicity"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Modane.ecore#//Pty/optional"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Modane.ecore#//Pty/type"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Modane.ecore#//Pty/multiple"/>
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Modane.ecore#//Pty/defaultValue"/>
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Modane.ecore#//Pty/namefr"/>
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference Modane.ecore#//Pty/categories"/>
@@ -178,10 +166,8 @@
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Modane.ecore#//Function/args"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Modane.ecore#//Function/support"/>
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Modane.ecore#//Function/sequential"/>
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Modane.ecore#//Function/inVars"/>
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Modane.ecore#//Function/outVars"/>
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Modane.ecore#//Function/inOutVars"/>
-      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference Modane.ecore#//Function/calls"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Modane.ecore#//Function/vars"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Modane.ecore#//Function/calls"/>
     </genClasses>
     <genClasses ecoreClass="Modane.ecore#//Arg">
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Modane.ecore#//Arg/direction"/>
@@ -196,7 +182,11 @@
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Modane.ecore#//VarDefinition/supports"/>
     </genClasses>
     <genClasses ecoreClass="Modane.ecore#//VarReference">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Modane.ecore#//VarReference/direction"/>
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference Modane.ecore#//VarReference/variable"/>
+    </genClasses>
+    <genClasses ecoreClass="Modane.ecore#//FunctionReference">
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference Modane.ecore#//FunctionReference/call"/>
     </genClasses>
     <genClasses ecoreClass="Modane.ecore#//ItemFamily">
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Modane.ecore#//ItemFamily/support"/>
@@ -221,10 +211,8 @@
     <genClasses ecoreClass="Modane.ecore#//OverrideFunction">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Modane.ecore#//OverrideFunction/description"/>
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference Modane.ecore#//OverrideFunction/func"/>
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Modane.ecore#//OverrideFunction/inVars"/>
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Modane.ecore#//OverrideFunction/outVars"/>
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Modane.ecore#//OverrideFunction/inOutVars"/>
-      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference Modane.ecore#//OverrideFunction/calls"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Modane.ecore#//OverrideFunction/vars"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Modane.ecore#//OverrideFunction/calls"/>
     </genClasses>
     <genClasses ecoreClass="Modane.ecore#//UnitTestFunction">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Modane.ecore#//UnitTestFunction/description"/>
@@ -239,10 +227,8 @@
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Modane.ecore#//EntryPoint/location"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Modane.ecore#//EntryPoint/support"/>
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Modane.ecore#//EntryPoint/sequential"/>
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Modane.ecore#//EntryPoint/inVars"/>
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Modane.ecore#//EntryPoint/outVars"/>
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Modane.ecore#//EntryPoint/inOutVars"/>
-      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference Modane.ecore#//EntryPoint/calls"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Modane.ecore#//EntryPoint/vars"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Modane.ecore#//EntryPoint/calls"/>
     </genClasses>
     <genClasses ecoreClass="Modane.ecore#//UserCategory"/>
     <genClasses ecoreClass="Modane.ecore#//Comment">
