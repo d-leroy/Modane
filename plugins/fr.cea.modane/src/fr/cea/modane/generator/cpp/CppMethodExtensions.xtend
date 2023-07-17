@@ -17,9 +17,11 @@ import fr.cea.modane.modane.FunctionItemType
 import fr.cea.modane.modane.Item
 import fr.cea.modane.modane.Reference
 import fr.cea.modane.modane.Simple
+import fr.cea.modane.modane.SimpleType
 import fr.cea.modane.modane.VarDefinition
 import java.util.ArrayList
 
+import static extension fr.cea.modane.generator.VariableExtensions.*
 import static extension fr.cea.modane.generator.cpp.ArgDefinitionExtensions.*
 import static extension fr.cea.modane.generator.cpp.PtyOrArgTypeExtensions.*
 import static extension fr.cea.modane.generator.cpp.ReferenceableExtensions.*
@@ -123,7 +125,7 @@ class CppMethodExtensions
 	static def getExecutionContextArgs(CppMethod it)
 	{
 		val args = newArrayList
-		args.add('''"«name.toFirstUpper + 'ExecutionContext'»"''')
+		args.add('''"«executionContextClassName»"''')
 		if (!allVars.empty && GenerationContext::Current.generationOptions.variableAsArgs) args.add('&vars')
 		if (itemTypeSpecialized) args += 'items'
 		else if (hasSupport) args += 'items'
@@ -188,8 +190,18 @@ class CppMethodExtensions
 		{
 			if (multiple)
 			{
-				if (returnType instanceof Item) returnType.typeName + 'Vector'
-				else 'SharedArray< ' +  returnType.typeName + ' >'
+				if (returnType instanceof Item) {
+					returnType.typeName + 'Vector'
+				} else if (returnType instanceof Simple) {
+					val t = (returnType as Simple).type.typeName
+					if (t == SimpleType::BOOLEAN.getName) {
+						'SharedArray< bool >'
+					} else {
+						'SharedArray< ' + t + ' >'
+					}
+				} else {
+					'SharedArray< ' +  returnType.typeName + ' >'
+				}
 			}
 			else
 			{
@@ -290,10 +302,19 @@ class CppMethodExtensions
 			  }
 			''')»
 			  «ELSE»
+			  «IF sciHookInstrumentation || (profAccInstrumentation && profAcc)»
 			  «IF returnType !== null»
-			  «generateMethodContent(sciHookInstrumentation, methodIfDefContent, baseEventName,'''return this->«name»(«argSequence.join(', ')»);''')»
+			  «returnTypeName» result;
+			  «generateMethodContent(sciHookInstrumentation, methodIfDefContent, baseEventName,'''result = this->«name»(«argSequence.join(', ')»);''')»
 			  «ELSE»
 			  «generateMethodContent(sciHookInstrumentation, methodIfDefContent, baseEventName,'''this->«name»(«argSequence.join(', ')»);''')»
+			  «ENDIF»
+			  «ELSE»
+			  «IF returnType !== null»
+			  return this->«name»(«argSequence.join(', ')»);
+			  «ELSE»
+			  this->«name»(«argSequence.join(', ')»);
+			  «ENDIF»
 			  «ENDIF»
 			  «ENDIF»
 			  «IF profAccInstrumentation && profAcc»

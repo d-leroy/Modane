@@ -3,6 +3,7 @@
  */
 package fr.cea.modane.formatting2
 
+import com.google.common.collect.Maps
 import fr.cea.modane.modane.ArgDefinition
 import fr.cea.modane.modane.Comment
 import fr.cea.modane.modane.EntryPoint
@@ -27,17 +28,27 @@ import java.util.function.Predicate
 import org.eclipse.emf.common.util.EList
 import org.eclipse.emf.ecore.EObject
 import org.eclipse.xtext.formatting2.AbstractFormatter2
+import org.eclipse.xtext.formatting2.FormatterPreferenceKeys
 import org.eclipse.xtext.formatting2.IFormattableDocument
+import org.eclipse.xtext.preferences.MapBasedPreferenceValues
 
 class ModaneFormatter extends AbstractFormatter2 
 {
 	def dispatch void format(ModaneModel elt, extension IFormattableDocument document)
 	{
+		
+		val preferences = getPreferences
+		val newMap = Maps.<String, String> newLinkedHashMap
+		newMap.put(FormatterPreferenceKeys.indentation.id, '  ') // $NON-NLS-1$
+		val result = new MapBasedPreferenceValues(preferences, newMap)
+		request.preferences = result
+		
 		elt.allRegionsFor.keywords(';').forEach[prepend[noSpace]]
 		elt.allRegionsFor.keywords(',').forEach[prepend[noSpace]]
 		elt.allRegionsFor.keywords('[*]').forEach[prepend[noSpace]]
 		elt.elements.forEach[format]
 		elt.eAllContents.filter(Comment).forEach[format]
+		elt.append[newLine]
 	}
 
 	def dispatch void format(ModaneElement elt, extension IFormattableDocument document) 
@@ -54,14 +65,32 @@ class ModaneFormatter extends AbstractFormatter2
 			open.prepend[newLine]
 			close.prepend[newLine]
 			interior(open,close)[indent]
+			
+			if (elt instanceof Module ||
+				elt instanceof Service)
+			{
+				val begin = elt.regionFor.keyword('namefr')?.previousSemanticRegion
+				val end = open
+				if (begin !== null) {
+					interior(begin, end)[indent]
+				}
+				elt.regionFor.keyword('namefr').prepend[newLine]
+				elt.regionFor.keyword('categories').prepend[newLine]
+			}
 		}
 		else
 		if (elt instanceof Variable)
 		{
 			elt.regionFor.keyword('{').append[oneSpace]
 			elt.regionFor.keyword('}').prepend[oneSpace]
-			elt.regionFor.keyword('@axlname').prepend[oneSpace]
-			elt.regionFor.keyword('(').append[noSpace]
+			elt.regionFor.keyword('@axlname').prepend[newLine]
+			val begin = elt.regionFor.keyword('@axlname').previousSemanticRegion
+			val end = elt.allSemanticRegions.last
+			if (begin !== null) {
+				interior(begin, end)[indent]
+			}
+			
+			elt.regionFor.keyword('(').surround[noSpace]
 			elt.regionFor.keyword(')').prepend[noSpace]
 			elt.regionFor.features(ModanePackage.Literals.VARIABLE__DUMP,
 				ModanePackage.Literals.VARIABLE__RESTORE,
@@ -97,6 +126,14 @@ class ModaneFormatter extends AbstractFormatter2
 	def dispatch void format(Pty elt, extension IFormattableDocument document)
 	{
 		elt.addNewLine(document)
+		
+		val begin = elt.regionFor.keyword('namefr')?.previousSemanticRegion
+		val end = elt.regionForEObject.nextSemanticRegion
+		if (begin !== null) {
+			interior(begin, end)[indent]
+		}
+		elt.regionFor.keyword('namefr').prepend[newLine]
+		elt.regionFor.keyword('categories').prepend[newLine]
 	}
 	
 	def dispatch void format(EntryPoint elt, extension IFormattableDocument document)
@@ -175,6 +212,14 @@ class ModaneFormatter extends AbstractFormatter2
 	def dispatch void format(EnumerationLiteral elt, extension IFormattableDocument document)
 	{
 		elt.prepend[newLine]
+		
+		val begin = elt.regionFor.keyword('namefr')?.previousSemanticRegion
+		val end = elt.regionForEObject.nextSemanticRegion
+		if (begin !== null) {
+			interior(begin, end)[indent]
+		}
+		elt.regionFor.keyword('namefr').prepend[newLine]
+		elt.regionFor.keyword('categories').prepend[newLine]
 	}
 	
 	private def addNewLine(EObject elt, extension IFormattableDocument document) {

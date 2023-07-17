@@ -134,7 +134,7 @@ class StandaloneGenerator
 
 				fsa.generateFile("__Bindings.h",
 				'''
-				#include "scihook/SciHook.h"
+				#include "SciHook.h"
 
 				void
 				try_import(const char *module_name) {

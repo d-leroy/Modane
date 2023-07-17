@@ -13,8 +13,11 @@ import fr.cea.modane.modane.ArgDefinition
 import fr.cea.modane.modane.Direction
 import fr.cea.modane.modane.Item
 import fr.cea.modane.modane.PtyOrArgType
+import fr.cea.modane.modane.Simple
 
+import static extension fr.cea.modane.generator.VariableExtensions.*
 import static extension fr.cea.modane.generator.cpp.PtyOrArgTypeExtensions.*
+import fr.cea.modane.modane.SimpleType
 
 class ArgDefinitionExtensions 
 {
@@ -37,38 +40,64 @@ class ArgDefinitionExtensions
 	 * | ex: A         | *    | ConstArrayView<A*>         | Array<A*>&        |
 	 * +---------------+------+----------------------------+-------------------+
 	 */	 
-	static def getTypeName(ArgDefinition it) 
+	static def getTypeName(ArgDefinition it)
 	{
 		switch (it)
 		{
-			case direction == Direction::IN && !multiple: type.inUniqueTypeName
-			case direction == Direction::IN &&  multiple: type.inMultipleTypeName
-			case direction != Direction::IN && !multiple: type.outUniqueTypeName
-			case direction != Direction::IN &&  multiple: type.outMultipleTypeName
+			case direction == Direction::IN && !actuallyMultiple: type.inUniqueTypeName
+			case direction == Direction::IN &&  actuallyMultiple: type.inMultipleTypeName
+			case direction != Direction::IN && !actuallyMultiple: type.outUniqueTypeName
+			case direction != Direction::IN &&  actuallyMultiple: type.outMultipleTypeName
 		}
-	} 
-	
-	private static def getInUniqueTypeName(PtyOrArgType type) 
-	{ 
-		'const ' + type.typeName 
 	}
 	
-	private static def getInMultipleTypeName(PtyOrArgType type) 
+	private static def isActuallyMultiple(ArgDefinition it)
 	{
-		if (type instanceof Item)  type.typeName + 'VectorView'
-		else 'ConstArrayView< ' + type.typeName + ' >'
+		return multiple || (type instanceof Simple && (type as Simple).type.multiplicity == 'Array')
 	}
 	
-	private static def getOutUniqueTypeName(PtyOrArgType type) 
+	private static def getInUniqueTypeName(PtyOrArgType type)
+	{ 
+		'const ' + type.typeName
+	}
+	
+	private static def getInMultipleTypeName(PtyOrArgType type)
+	{
+		if (type instanceof Item) {
+			type.typeName + 'VectorView'
+		} else if (type instanceof Simple) {
+			val t = (type as Simple).type.typeName
+			if (t == SimpleType::BOOLEAN.getName) {
+				'ConstArrayView< bool >'
+			} else {
+				'ConstArrayView< ' + t + ' >'
+			}
+		} else {
+			'ConstArrayView< ' + type.typeName + ' >'
+		}
+	}
+	
+	private static def getOutUniqueTypeName(PtyOrArgType type)
 	{ 
 		if (type.typeName.endsWith('*')) type.typeName
 		else type.typeName + '&'
 	}
 	
-	private static def getOutMultipleTypeName(PtyOrArgType type) 
+	private static def getOutMultipleTypeName(PtyOrArgType type)
 	{
-		if (type instanceof Item)  type.typeName + 'Vector&'
-		else 'Array< ' + type.typeName + ' >&'
+		if (type instanceof Item) {
+			type.typeName + 'Vector&'
+		} else if (type instanceof Simple) {
+			val t = (type as Simple).type.typeName
+			if (t == SimpleType::BOOLEAN.getName) {
+				'Array< bool >&'
+			} else {
+				'Array< ' +  t + ' >&'
+			}
+			
+		} else {
+			'Array< ' + type.typeName + ' >&'
+		}
 	}
 	
 	static def getFieldName(ArgDefinition it) { 'm_' + name }

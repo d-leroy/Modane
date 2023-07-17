@@ -34,7 +34,7 @@ class ReferenceableExtensions
 		if (nsName != context.nsName && !context.isAUsedNs(nsName))
 			'::' + nsName + '::' + referencedName
 		else
-			referencedName	
+			referencedName
 	}
 
 	static def dispatch getReferencedNameWithNs(Legacy it)

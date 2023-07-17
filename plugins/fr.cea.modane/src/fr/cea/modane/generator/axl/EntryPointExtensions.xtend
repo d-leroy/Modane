@@ -10,9 +10,9 @@
 package fr.cea.modane.generator.axl
 
 import fr.cea.modane.modane.EntryPoint
+import fr.cea.modane.modane.EntryPointAutoLoadValue
 
 import static extension fr.cea.modane.ModaneStringExtensions.*
-import fr.cea.modane.modane.EntryPointAutoLoad
 
 class EntryPointExtensions 
 {
@@ -25,13 +25,18 @@ class EntryPointExtensions
 		property="«autoLoad.propertyString»"/>
 	'''
 	
-	private static def getPropertyString(EntryPointAutoLoad epal)
+	private static def getPropertyString(EntryPointAutoLoadValue epal)
 	{
-		switch epal
-		{
-			case AUTO_LOAD_BEGIN : 'auto-load-begin'
-			case AUTO_LOAD_END : 'auto-load-end'
-			case NO_AUTO_LOAD : 'none'
+		if (epal === null) {
+			return 'none'
+		} else {
+			switch epal.value
+			{
+				case AUTO_LOAD_BEGIN : 'auto-load-begin'
+				case AUTO_LOAD_END : 'auto-load-end'
+				case NO_AUTO_LOAD : 'none'
+			}
 		}
+		
 	}
 }

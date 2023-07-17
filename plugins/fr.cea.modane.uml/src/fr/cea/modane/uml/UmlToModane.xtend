@@ -422,9 +422,9 @@ class UmlToModane
 		}
 	}
 	
-	private def FunctionReference create ModaneFactory::eINSTANCE.createFunctionReference toFunctionReference(Function f)
+	private def FunctionReference toFunctionReference(Function f)
 	{
-		call = f
+		ModaneFactory::eINSTANCE.createFunctionReference => [call = f]
 	}
 	
 	def getActualType(PtyOrArgType it, int upperBound) {

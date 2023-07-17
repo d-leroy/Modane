@@ -34,11 +34,11 @@
   <eClassifiers xsi:type="ecore:EClass" name="EnumerationLiteral" eSuperTypes="#//NamedElement">
     <eStructuralFeatures xsi:type="ecore:EReference" name="description" eType="#//Comment"
         containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="valueProvided" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EBoolean"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="value" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EInt"/>
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="namefr" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="categories" unique="false"
         upperBound="-1" eType="#//UserCategory"/>
-    <eStructuralFeatures xsi:type="ecore:EAttribute" name="valueProvided" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EBoolean"/>
-    <eStructuralFeatures xsi:type="ecore:EAttribute" name="value" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EInt"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="Legacy" eSuperTypes="#//Referenceable">
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="originFile" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
@@ -162,7 +162,8 @@
   <eClassifiers xsi:type="ecore:EClass" name="EntryPoint" eSuperTypes="#//NamedElement">
     <eStructuralFeatures xsi:type="ecore:EReference" name="description" eType="#//Comment"
         containment="true"/>
-    <eStructuralFeatures xsi:type="ecore:EAttribute" name="autoLoad" eType="#//EntryPointAutoLoad"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="autoLoad" eType="#//EntryPointAutoLoadValue"
+        containment="true"/>
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="location" eType="#//EntryPointLocation"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="support" eType="#//FunctionItem"
         containment="true"/>
@@ -171,6 +172,9 @@
         containment="true"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="calls" upperBound="-1"
         eType="#//FunctionReference" containment="true"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="EntryPointAutoLoadValue">
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="value" eType="#//EntryPointAutoLoad"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EEnum" name="EntryPointLocation">
     <eLiterals name="ComputeLoop" literal="@ComputeLoop"/>

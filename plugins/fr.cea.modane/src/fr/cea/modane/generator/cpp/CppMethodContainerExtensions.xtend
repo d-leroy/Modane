@@ -10,9 +10,11 @@
 package fr.cea.modane.generator.cpp
 
 import fr.cea.modane.generator.cmake.ModelInfo
+import fr.cea.modane.generator.cmake.ModelInfoTarget
 import fr.cea.modane.modane.Direction
 import fr.cea.modane.modane.Function
 import fr.cea.modane.modane.Interface
+import fr.cea.modane.modane.Legacy
 import fr.cea.modane.modane.ModaneElement
 import fr.cea.modane.modane.Module
 import fr.cea.modane.modane.Pty
@@ -58,12 +60,13 @@ class CppMethodContainerExtensions
 		if (instrument) {
 			context.newFile(outputPath, contextsClassFileName, true, component)
 			modelInfo.cppFiles += contextsClassFileName
+			modelInfo.targets += ModelInfoTarget::SCIHOOK
 			for (m  : methodsToOverwrite)
 			{
 				// We only generate a dedicated execution context struct if it would contain variables
 				if (m.executionContextArgs.length > 1) context.addContent(m.executionContextClassContent)
 			}
-			context.addInclude("scihook/SciHook.h")
+			context.addInclude("SciHook.h")
 			context.generate(fsa)
 		}
 
@@ -73,7 +76,6 @@ class CppMethodContainerExtensions
 		if (instrument && methodsToOverwrite.exists[executionContextArgs.size > 1]) {
 			context.newFile(outputPath, bindingsClassFileName, true, component)
 			modelInfo.cppFiles += bindingsClassFileName
-			modelInfo.targets += "scihook"
 			for (i : interfaces) context.addInclude(i.outputPath, i.referencedFileName)
 
 			// fonctions itemTypeSpecialized
@@ -88,9 +90,17 @@ class CppMethodContainerExtensions
 
 			if (context.generationOptions.variableAsArgs) context.addInclude(outputPath, varClassFileName)
 			context.addInclude(outputPath, contextsClassFileName)
-
-			//FIXME: get missing includes by side-effect
-			getBaseClassContent(profAccInstrumentation, sciHookInstrumentation)
+			
+			allProperties.filter[type instanceof Reference]
+					.map[(type as Reference).target]
+					.forEach[
+						if (it instanceof Legacy) {
+							context.addInclude(referencedFileName)
+						} else {
+							context.addInclude(outputPath, referencedFileName)
+						}
+					]
+			
 			context.addInclude("scihook/scihookdefs.h")
 			context.addContent(bindingsClassContent)
 			if (hasAxl)
@@ -134,7 +144,7 @@ class CppMethodContainerExtensions
 			context.addInclude("arcane/Concurrency.h")
 		if (profAccInstrumentation && allMethods.exists[m | m.profAcc])
 		{
-			modelInfo.targets += "accenv"
+			modelInfo.targets += ModelInfoTarget::ACCENV
 			context.addInclude("accenv/ProfAcc.h")
 		}
 
@@ -436,9 +446,11 @@ class CppMethodContainerExtensions
 		«val context = GenerationContext::Current»
 		PYBIND11_EMBEDDED_MODULE(«embeddedModuleName», m)
 		{
+«««		  pybind11::class_<«context.nsName»::«developerClassName», std::shared_ptr<«context.nsName»::«developerClassName»>, >(m, "«developerClassName»")
+«««		    «FOR v : it.»
 		  «FOR m : methodsToOverwrite»
 		  «IF m.executionContextArgs.length > 1»
-		  pybind11::class_<«context.nsName»::«m.executionContextClassName», std::shared_ptr<«context.nsName»::«m.executionContextClassName»>, SciHook::SciHookExecutionContext>(m, "«m.executionContextClassName»")
+		  auto «context.nsName.toFirstLower»«m.executionContextClassName»Class = pybind11::class_<«context.nsName»::«m.executionContextClassName», std::shared_ptr<«context.nsName»::«m.executionContextClassName»>, SciHook::SciHookExecutionContext>(m, "«m.executionContextClassName»")
 		    «IF m.itemTypeSpecialized || m.hasSupport».def_property_readonly("items", &«context.nsName»::«m.executionContextClassName»::get_items)«ENDIF»
 		    «FOR a : m.argDefinitions SEPARATOR '\n'».def_property_readonly("«a.name»", &«context.nsName»::«m.executionContextClassName»::get_«a.name»)«ENDFOR»
 		    «FOR v : m.allVars SEPARATOR '\n'».def_property_readonly("«v.name»", &«context.nsName»::«m.executionContextClassName»::get_«v.fieldName»)«ENDFOR»
@@ -454,6 +466,10 @@ class CppMethodContainerExtensions
 		      oss << "[" << self.name << "]";
 		      return oss.str();
 		    });
+		  «val classVarName = '''«context.nsName.toFirstLower»«m.executionContextClassName»Class'''»
+		  «classVarName».attr("function") = "«m.name»";
+		  «classVarName».attr("container") = "«context.nsName»::«m.containerName»";
+		  «classVarName».attr("kind") = «IF m instanceof EntryPointCppMethod»"EntryPoint@«(m as EntryPointCppMethod).ep.location»"«ELSEIF m instanceof OverrideFunctionCppMethod»"OverrideFunction"«ELSE»"Function"«ENDIF»;
 		  «ENDIF»
 		  «ENDFOR»
 		}

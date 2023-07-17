@@ -13,7 +13,9 @@ import fr.cea.modane.modane.Item
 import fr.cea.modane.modane.Pty
 
 import static extension fr.cea.modane.ModaneStringExtensions.*
+import static extension fr.cea.modane.generator.VariableExtensions.*
 import static extension fr.cea.modane.generator.cpp.PtyOrArgTypeExtensions.*
+import fr.cea.modane.modane.Simple
 
 class PtyExtensions extends fr.cea.modane.PtyExtensions 
 {
@@ -35,11 +37,15 @@ class PtyExtensions extends fr.cea.modane.PtyExtensions
 	 */
 	private static def getSetterTypeName(Pty it) 
 	{ 
-		// We don't use 'actuallyMultiple' here as typename of Simple types already handle multiplicity
-		if (multiple)
+		if (actuallyMultiple)
 		{
-			if (type instanceof Item) type.typeName + 'Vector'
-			else 'Array< ' +  type.typeName + ' >&'
+			if (type instanceof Item) {
+				type.typeName + 'Vector'
+			} else if (type instanceof Simple) {
+				'Array< ' + (type as Simple).type.typeName + ' >&'
+			} else {
+				'Array< ' + type.typeName + ' >&'
+			}
 		}
 		else
 		{
@@ -66,11 +72,15 @@ class PtyExtensions extends fr.cea.modane.PtyExtensions
 	 */
 	private static def getReturnTypeName(Pty it)
 	{
-		// We don't use 'actuallyMultiple' here as typename of Simple types already handle multiplicity
-		if (multiple)
+		if (actuallyMultiple)
 		{
-			if (type instanceof Item) type.typeName + 'Vector'
-			else 'ConstArrayView< ' +  type.typeName + ' >'
+			if (type instanceof Item) {
+				type.typeName + 'Vector'
+			} else if (type instanceof Simple) {
+				'ConstArrayView< ' + (type as Simple).type.typeName + ' >'
+			} else {
+				'ConstArrayView< ' + type.typeName + ' >'
+			}
 		}
 		else
 		{
@@ -96,11 +106,15 @@ class PtyExtensions extends fr.cea.modane.PtyExtensions
 	 */
 	static def getAttrTypeName(Pty it) 
 	{ 
-		// We don't use 'actuallyMultiple' here as typename of Simple types already handle multiplicity
-		if (multiple)
+		if (actuallyMultiple)
 		{
-			if (type instanceof Item) type.typeName + 'Vector'
-			else 'UniqueArray< ' +  type.typeName + ' >'
+			if (type instanceof Item) {
+				type.typeName + 'Vector'
+			} else if (type instanceof Simple) {
+				'UniqueArray< ' + (type as Simple).type.typeName + ' >'
+			} else {
+				'UniqueArray< ' + type.typeName + ' >'
+			}
 		}
 		else
 		{

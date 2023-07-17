@@ -46,8 +46,8 @@ Enumeration:
 
 EnumerationLiteral:
 	description=Comment?
-	('namefr' namefr=STRING)? ('categories' categories+=[UserCategory|QualifiedName] (',' categories+=[UserCategory|QualifiedName])* )?
-	name=ID (valueProvided?='=' value=INT)?';';
+	name=ID (valueProvided?='=' value=INT)?
+	('namefr' namefr=STRING)? ('categories' categories+=[UserCategory|QualifiedName] (',' categories+=[UserCategory|QualifiedName])* )? ';';
 
 // ----------------------------------------------------------------------------------------------------------------- //
 
@@ -159,11 +159,14 @@ Module:
 
 EntryPoint:
 	description=Comment?
-	('[' autoLoad=EntryPointAutoLoad ']')? 
-	location=EntryPointLocation name=ID  
+	('[' autoLoad=EntryPointAutoLoadValue ']')?
+	location=EntryPointLocation name=ID
 	('{' support=FunctionItem '}')? (sequential?='sequential')?
 	(vars+=VarReference (',' vars+=VarReference)*)?
 	(calls+=FunctionReference (',' calls+=FunctionReference)* )? ';';
+
+EntryPointAutoLoadValue:
+	value=EntryPointAutoLoad;
 
 enum EntryPointLocation:
 	ComputeLoop='@ComputeLoop' | OnMeshChanged='@OnMeshChanged' | OnMeshRefinement='@OnMeshRefinement' | Init='@Init' | ContinueInit='@ContinueInit' | StartInit='@StartInit' | Restore='@Restore' | Build='@Build' | Exit='@Exit';

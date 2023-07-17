@@ -15,7 +15,7 @@ import org.eclipse.xtend.lib.annotations.Data
 @Data
 class ModelInfo
 {
-	val targets = new LinkedHashSet<String>
+	val targets = new LinkedHashSet<ModelInfoTarget>
 	val cppFiles = new LinkedHashSet<String>
 	val axlFiles = new LinkedHashSet<String>
 
@@ -23,4 +23,9 @@ class ModelInfo
 	{
 		targets.empty && cppFiles.empty && axlFiles.empty
 	}
+}
+
+enum ModelInfoTarget
+{
+	ACCENV, SCIHOOK
 }

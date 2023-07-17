@@ -49,9 +49,9 @@ class OperationExtensions
 		val umlAutoLoad = getValue(profile.entryPointSt, "autoLoad") as EnumerationLiteral
 		switch (umlAutoLoad.name)
 		{
-			case 'Begin' : EntryPointAutoLoad::AUTO_LOAD_BEGIN
-			case 'End' : EntryPointAutoLoad::AUTO_LOAD_END
-			default : EntryPointAutoLoad::NO_AUTO_LOAD
+			case 'Begin' : ModaneFactory::eINSTANCE.createEntryPointAutoLoadValue => [value = EntryPointAutoLoad::AUTO_LOAD_BEGIN]
+			case 'End' : ModaneFactory::eINSTANCE.createEntryPointAutoLoadValue => [value = EntryPointAutoLoad::AUTO_LOAD_END]
+			default : null
 		}
 	}
 	

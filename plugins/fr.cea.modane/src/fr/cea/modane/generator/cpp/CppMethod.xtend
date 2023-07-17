@@ -20,6 +20,8 @@ import fr.cea.modane.modane.VarDefinition
 import java.util.List
 
 import static extension fr.cea.modane.ModaneStringExtensions.*
+import static extension fr.cea.modane.generator.VariableExtensions.*
+import fr.cea.modane.modane.Simple
 
 interface CppMethod 
 {
@@ -41,7 +43,7 @@ interface CppMethod
 
 class FunctionCppMethod implements CppMethod
 {
-	Function f
+	public Function f
 	CppMethodContainer container
 	String containerName
 	
@@ -60,7 +62,7 @@ class FunctionCppMethod implements CppMethod
 	override getAllArgs() { f.args }
 	override getCalls() { f.calls.map[c|c.call] }
 	override getReturnType() { f.type }
-	override isMultiple() { f.multiple }
+	override isMultiple() { f.multiple || (f.type instanceof Simple && (f.type as Simple).type.multiplicity == 'Array') }
 	override getSupport() { f.support === null ? null : f.support.type }
 	override isSequential() { f.sequential }
 	override isConst() { f.const }
@@ -75,7 +77,7 @@ class FunctionCppMethod implements CppMethod
 
 class OverrideFunctionCppMethod extends FunctionCppMethod
 {
-	OverrideFunction of
+	public OverrideFunction of
 	
 	new(OverrideFunction of, CppMethodContainer container, String containerName) 
 	{
@@ -97,7 +99,7 @@ class OverrideFunctionCppMethod extends FunctionCppMethod
 
 class EntryPointCppMethod implements CppMethod
 {
-	EntryPoint ep
+	public EntryPoint ep
 	CppMethodContainer container
 	String containerName
 	

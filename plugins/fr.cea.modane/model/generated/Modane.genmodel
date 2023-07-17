@@ -130,10 +130,10 @@
     </genClasses>
     <genClasses ecoreClass="Modane.ecore#//EnumerationLiteral">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Modane.ecore#//EnumerationLiteral/description"/>
-      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Modane.ecore#//EnumerationLiteral/namefr"/>
-      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference Modane.ecore#//EnumerationLiteral/categories"/>
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Modane.ecore#//EnumerationLiteral/valueProvided"/>
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Modane.ecore#//EnumerationLiteral/value"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Modane.ecore#//EnumerationLiteral/namefr"/>
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference Modane.ecore#//EnumerationLiteral/categories"/>
     </genClasses>
     <genClasses ecoreClass="Modane.ecore#//Legacy">
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Modane.ecore#//Legacy/originFile"/>
@@ -223,12 +223,15 @@
     </genClasses>
     <genClasses ecoreClass="Modane.ecore#//EntryPoint">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Modane.ecore#//EntryPoint/description"/>
-      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Modane.ecore#//EntryPoint/autoLoad"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Modane.ecore#//EntryPoint/autoLoad"/>
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Modane.ecore#//EntryPoint/location"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Modane.ecore#//EntryPoint/support"/>
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Modane.ecore#//EntryPoint/sequential"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Modane.ecore#//EntryPoint/vars"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Modane.ecore#//EntryPoint/calls"/>
+    </genClasses>
+    <genClasses ecoreClass="Modane.ecore#//EntryPointAutoLoadValue">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Modane.ecore#//EntryPointAutoLoadValue/value"/>
     </genClasses>
     <genClasses ecoreClass="Modane.ecore#//UserCategory"/>
     <genClasses ecoreClass="Modane.ecore#//Comment">
