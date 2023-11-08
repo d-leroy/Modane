@@ -84,9 +84,9 @@ class CMakeListsGenerator
 
 	private def getShortName(String fullyQualifiedName)
 	{ 
-		if (fullyQualifiedName.contains('.')) fullyQualifiedName.split("\\.").last
+		if (fullyQualifiedName.contains('::')) fullyQualifiedName.split("\\.").last
 		else fullyQualifiedName
 	}
 
-	private def getPath(String fullyQualifiedName) { fullyQualifiedName.replace('.', '/') }
+	private def getPath(String fullyQualifiedName) { fullyQualifiedName.replace('::', '/') }
 }

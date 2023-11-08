@@ -78,7 +78,7 @@ class PtyExtensions
 	 */
 	private static def dispatch getReferenceContent(Pty it, Interface i)
 	'''
-		<xs:element name="«xsdName»" type="«i.xsdTypeNameWithNs»"«IF defaultValue!==null» default="«defaultValue.split('\\.').last»"«ENDIF» «arcaneBound»>
+		<xs:element name="«xsdName»" type="«i.xsdTypeNameWithNs»"«IF defaultValue!==null» default="«defaultValue.split('::').last»"«ENDIF» «arcaneBound»>
 			«FOR s : getAllServicesImplementing(i, it) SEPARATOR '\n'»<xs:alternative test="@name='«s.name»'" type="«s.xsdTypeName»"/>«ENDFOR»
 		</xs:element>
 	'''

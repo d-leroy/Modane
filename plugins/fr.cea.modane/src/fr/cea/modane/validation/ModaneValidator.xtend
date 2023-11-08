@@ -365,7 +365,7 @@ class ModaneValidator extends UniqueNameValidator
 				val interf = (type as Reference).target as Interface
 				val services = Utils::getAllElementsOfType(scopeProvider, it, ModanePackage::eINSTANCE.service).filter(Service)
 
-				val service = services.findFirst[s | s.model.name + '.' + s.name == defaultValue]
+				val service = services.findFirst[s | s.model.name + '::' + s.name == defaultValue]
 				if (service === null)
 				{
 					error(CORRECT_PTY_DEFAULT_VALUE, ModanePackage.Literals::PTY__DEFAULT_VALUE)

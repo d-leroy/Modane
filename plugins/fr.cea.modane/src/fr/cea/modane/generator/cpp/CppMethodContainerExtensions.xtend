@@ -427,7 +427,7 @@ class CppMethodContainerExtensions
 	private static def String getDebugVar(CppMethodContainer it)
 	{
 		val context = GenerationContext::Current
-		val result = modaneElement.model.name.replace('.', '_').toUpperCase
+		val result = modaneElement.model.name.replace('::', '_').toUpperCase
 		context.cmakeVariables += '''SCIHOOK_«result»_DISABLED'''
 		return result
 	}

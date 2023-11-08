@@ -69,7 +69,7 @@ class ModaneProposalProvider extends AbstractModaneProposalProvider
 				val service = s as Service
 				if (service.interfaces.contains(interf))
 				{
-					val name = '"' + service.model.name + '.' + service.name + '"'
+					val name = '"' + service.model.name + '::' + service.name + '"'
 					acceptor.accept(createCompletionProposal(name, context))	
 				}	
 			}
@@ -81,7 +81,7 @@ class ModaneProposalProvider extends AbstractModaneProposalProvider
 	override complete_QualifiedName(EObject model, RuleCall ruleCall, ContentAssistContext context, ICompletionProposalAcceptor acceptor)
 	{
 		val scope = scopeProvider.getScope(model, ModanePackage::eINSTANCE.modaneModel_Elements)
-		scope.modelNames.forEach[p | acceptor.accept(createCompletionProposal(p + '.', context))]
+		scope.modelNames.forEach[p | acceptor.accept(createCompletionProposal(p + '::', context))]
 	}
 
 	// Tri des enums avec l'option la courante en premier

@@ -48,8 +48,8 @@ class EObjectExtensions
 	{
 		if (it === null || !(eClass.EPackage instanceof ModanePackage)) null
 		else if (it instanceof ModaneElement) name
-		else if (it instanceof OverrideFunction) eContainer.fullName + '.' + func.name
-		else if (it instanceof NamedElement) eContainer.fullName + '.' + name
+		else if (it instanceof OverrideFunction) eContainer.fullName + '::' + func.name
+		else if (it instanceof NamedElement) eContainer.fullName + '::' + name
 		else eContainer.fullName
 	}
 }

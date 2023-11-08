@@ -87,7 +87,7 @@ class ModelTransformer
 			{
 				val interf = (p.type as Reference).target as Interface
 				if (interf.candidateForDefaultService)
-					p.defaultValue = interf.model.name + '.' + interf.defaultImplementationName
+					p.defaultValue = interf.model.name + '::' + interf.defaultImplementationName
 				else if (interf.allServiceRealisations.size == 1)
 				{
 					val service = interf.allServiceRealisations.head

@@ -210,7 +210,7 @@ class UmlToModane
 		}
 		else
 		{
-			return name.contains('.') ? name.split('\\.').join('/') + '/' + name.split('\\.').last + fileExt : name + '/' + name + fileExt
+			return name.contains('::') ? name.split('::').join('/') + '/' + name.split('::').last + fileExt : name + '/' + name + fileExt
 		}
 	}
 
@@ -280,7 +280,7 @@ class UmlToModane
 		type = p.type.toArgType.getActualType(p.upperBound)
 		multiple = p.upperBound.getActualMultiplicity(type)
 		optional = p.lowerBound == 0
-		if (p.defaultValue !== null) defaultValue = p.defaultValue.stringValue.split('::').map[obfuscatedString].join('.')
+		if (p.defaultValue !== null) defaultValue = p.defaultValue.stringValue.split('::').map[obfuscatedString].join('::')
 		namefr = p.getNameFr(profile.ptySt).obfuscatedString
 		if (p.isUserEnabled(profile.ptySt)) categories += defaultCategory
 	}
@@ -290,7 +290,7 @@ class UmlToModane
 		name = p.name.obfuscatedString.separateWithDefault
 		type = p.type.toArgType.getActualType(p.upperBound)
 		multiple = p.upperBound.getActualMultiplicity(type)
-		if (p.defaultValue !== null) defaultValue = p.defaultValue.stringValue.replaceAll('::','.')
+		if (p.defaultValue !== null) defaultValue = p.defaultValue.stringValue
 		if (p.direction == ParameterDirectionKind::OUT_LITERAL) direction = Direction::OUT
 		else if (p.direction == ParameterDirectionKind::INOUT_LITERAL) direction = Direction::INOUT
 		else direction = Direction::IN
@@ -366,18 +366,44 @@ class UmlToModane
 			else
 			{
 				val interfaceOp = umlInterface.allOperations.findFirst[o | o.name == f.name]
-				overrideFuncs += f.toOverrideFunction(interfaceOp.toFunction)
+				overrideFuncs += f.toOverrideFunction(interfaceOp, interfaceOp.toFunction)
 			}
 		}
 	}
 
-	private def OverrideFunction create ModaneFactory::eINSTANCE.createOverrideFunction toOverrideFunction(Operation o, Function interfaceFunc)
+	private def OverrideFunction create ModaneFactory::eINSTANCE.createOverrideFunction toOverrideFunction(Operation o, Operation interfaceOp, Function interfaceFunc)
 	{
 		description = o.description.obfuscatedComment
 		func = interfaceFunc
+		sequential = !interfaceOp.funcParallel
+		support = interfaceOp.funcSupport
+		const = interfaceOp.funcConst
+		
+		// duplication de la signature de la fonction implémentée
+		for (v : interfaceOp.funcInNotOutVars)
+		{
+			val c = v.toUmlClass
+			if (c.abstract) args += c.toVarDefinition(true, false)
+		}
+		for (v : interfaceOp.funcOutVars)
+		{
+			val c = v.toUmlClass
+			if (c.abstract) args += c.toVarDefinition(interfaceOp.funcInVars.contains(v), true)
+		}
+		for ( p : interfaceOp.inOutParameters) args += p.toArgument
+		for ( p : interfaceOp.inOutParameters) args += p.toArgument
+		
+		// ajout des vars propres à l'implémentation
 		for (v : o.funcInNotOutVars) vars += v.toUmlClass.toVariable.toVarReference(true, false)
 		for (v : o.funcOutVars) vars += v.toUmlClass.toVariable.toVarReference(o.funcInVars.contains(v), true)
 		for (cf : o.funcCalledFuncs) calls += cf.toOperation.toFunction.toFunctionReference
+		
+		// s'il y a un paramètre retour => type de la fonction
+		if (interfaceOp.hasReturnParameter)
+		{
+			type = interfaceOp.returnParameter.type.toArgType.getActualType(interfaceOp.returnParameter.upperBound)
+			multiple = interfaceOp.returnParameter.upperBound.getActualMultiplicity(type)
+		}
 	}
 
 	private def EntryPoint create ModaneFactory::eINSTANCE.createEntryPoint toEntryPoint(Operation o)

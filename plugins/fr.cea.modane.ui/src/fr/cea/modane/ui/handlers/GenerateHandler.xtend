@@ -111,7 +111,7 @@ class GenerateHandler extends AbstractHandler
 					consoleFactory.printConsole(MessageType.Start, "Starting generation process for: " + modelFile.name)
 					var packageToGenerate = ''
 					if (options.hasPackagePrefix && !options.generateAllPackages)
-						packageToGenerate = options.packagePrefix + '.' + options.packageToGenerate
+						packageToGenerate = options.packagePrefix + '::' + options.packageToGenerate
 					else
 						packageToGenerate = options.packageToGenerate
 

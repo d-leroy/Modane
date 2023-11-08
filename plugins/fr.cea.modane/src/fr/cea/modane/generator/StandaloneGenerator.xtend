@@ -205,8 +205,8 @@ class StandaloneGenerator
 			}
 			if (m !== parentModel && m.name.startsWith(parentModel.name))
 			{
-				val subName = m.name.replaceFirst(parentModel.name + '.', "")
-				if (!subName.contains('.')) subModelNames += subName 
+				val subName = m.name.replaceFirst(parentModel.name + '::', "")
+				if (!subName.contains('::')) subModelNames += subName 
 			}
 		}
 		return subModelNames

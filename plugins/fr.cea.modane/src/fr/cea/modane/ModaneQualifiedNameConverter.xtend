@@ -17,4 +17,7 @@ class ModaneQualifiedNameConverter extends IQualifiedNameConverter.DefaultImpl
 		super.toQualifiedName(qualifiedNameAsString.replaceAll('\\^', ''))
 	}
 	
+	override getDelimiter() {
+		'::'
+	}
 }

@@ -136,7 +136,7 @@ class PtyExtensions
 		<service-instance
 			name="«name.separateWith('-')»"
 			type="«t.referencedNameWithNs»"
-			«IF defaultValue!==null»default="«defaultValue.split('\\.').last»"«ENDIF»
+			«IF defaultValue!==null»default="«defaultValue.split('::').last»"«ENDIF»
 			«arcaneBound»>
 				«idBlock»
 		</service-instance>
@@ -163,7 +163,7 @@ class PtyExtensions
 		<service-instance
 			name="«name.separateWith('-')»"
 			type="«t.referencedNameWithNs»"
-			«IF defaultValue!==null» default="«defaultValue.split('\\.').last»"«ENDIF»
+			«IF defaultValue!==null» default="«defaultValue.split('::').last»"«ENDIF»
 			«arcaneBound»>
 				«idBlock»
 		</service-instance>

@@ -210,7 +210,13 @@
     </genClasses>
     <genClasses ecoreClass="Modane.ecore#//OverrideFunction">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Modane.ecore#//OverrideFunction/description"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Modane.ecore#//OverrideFunction/const"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Modane.ecore#//OverrideFunction/type"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Modane.ecore#//OverrideFunction/multiple"/>
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference Modane.ecore#//OverrideFunction/func"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Modane.ecore#//OverrideFunction/args"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Modane.ecore#//OverrideFunction/support"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Modane.ecore#//OverrideFunction/sequential"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Modane.ecore#//OverrideFunction/vars"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Modane.ecore#//OverrideFunction/calls"/>
     </genClasses>

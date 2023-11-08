@@ -28,7 +28,7 @@ ModaneElement:
 	Variable | ServiceOrModule | Referenceable | ItemFamily | UserCategory;
 
 QualifiedName:
-	ID ('.' ID)*;
+	ID ('::' ID)*;
 
 // ----------------------------------------------------------------------------------------------------------------- //
 
@@ -133,9 +133,12 @@ Service:
 
 OverrideFunction:
 	description=Comment?
-	'override' func=[Function|QualifiedName]
-	 (vars+=VarReference (',' vars+=VarReference)*)?
-	 (calls+=FunctionReference (',' calls+=FunctionReference)* )? ';';
+	'override' (const?='const')?
+	('void'|(type=PtyOrArgType (multiple?='[*]')?)) func=[Function|ID]
+	'(' (args+=Arg (',' args+=Arg)*)? ')'
+	('{' support=FunctionItem '}')? (sequential?='sequentially')?
+	(vars+=VarReference (',' vars+=VarReference)*)?
+	(calls+=FunctionReference (',' calls+=FunctionReference)* )? ';';
 
 UnitTestFunction:
 	description=Comment?

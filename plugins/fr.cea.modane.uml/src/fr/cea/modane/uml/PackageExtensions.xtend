@@ -26,14 +26,14 @@ class PackageExtensions
 	def String getFullName(Package it)
 	{
 		if (packagePrefix.nullOrEmpty) fullNameWithoutPrefix
-		else packagePrefix + '.' + fullNameWithoutPrefix
+		else packagePrefix + '::' + fullNameWithoutPrefix
 	}
 	
 	private def static String getFullNameWithoutPrefix(Package it)
 	{
 		if (it === null || it instanceof Model) ''
 		else if (owner !== null && owner instanceof Package && !(owner instanceof Model))
-			(owner as Package).getFullNameWithoutPrefix + '.' + name
+			(owner as Package).getFullNameWithoutPrefix + '::' + name
 		else name
 	}
 	
