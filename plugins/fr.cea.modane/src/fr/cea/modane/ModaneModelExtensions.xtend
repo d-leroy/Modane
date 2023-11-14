@@ -19,7 +19,7 @@ class ModaneModelExtensions
 	static def String[] getNameTokens(ModaneModel it) 
 	{
 		if (name.nullOrEmpty) #[] 
-		else name.split("\\.")
+		else name.split("::")
 	}
 	
 	static def getNsName(ModaneModel it) { nameTokens.map[s | s.toFirstUpper].join }	

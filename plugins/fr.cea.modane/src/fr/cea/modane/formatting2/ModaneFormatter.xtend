@@ -153,13 +153,19 @@ class ModaneFormatter extends AbstractFormatter2
 	
 	def dispatch void format(OverrideFunction elt, extension IFormattableDocument document)
 	{
-		elt.addNewLine(document)
+		elt.regionFor.keyword('(').surround[noSpace]
+		elt.regionFor.keyword(')').prepend[noSpace]
+		
+		elt.args.indentList([size > 1], document)
+		elt.args.forEach[format]
 		
 		elt.vars.indentList(document)
 		elt.vars.forEach[format]
 		
 		elt.calls.indentList(document)
 		elt.calls.forEach[format]
+		
+		createHiddenRegionFormattingMerger
 	}
 	
 	def dispatch void format(Function elt, extension IFormattableDocument document)
@@ -182,7 +188,12 @@ class ModaneFormatter extends AbstractFormatter2
 	
 	def dispatch void format(ArgDefinition elt, extension IFormattableDocument document)
 	{
-		val args = (elt.eContainer as Function).args
+		val args = if (elt.eContainer instanceof Function) {
+			(elt.eContainer as Function).args
+		} else {
+			(elt.eContainer as OverrideFunction).args
+		}
+		
 		if (args.indexOf(elt) > 0) {
 			elt.prepend[newLine]
 		}

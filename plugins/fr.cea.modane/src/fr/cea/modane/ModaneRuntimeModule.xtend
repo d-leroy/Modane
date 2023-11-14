@@ -7,6 +7,8 @@ import org.eclipse.xtext.conversion.IValueConverterService
 import org.eclipse.xtext.generator.IOutputConfigurationProvider
 import org.eclipse.xtext.naming.IQualifiedNameConverter
 import org.eclipse.xtext.naming.IQualifiedNameProvider
+import org.eclipse.xtext.serializer.tokens.ICrossReferenceSerializer
+import fr.cea.modane.serializer.ModaneCrossReferenceSerializer
 
 /**
  * Use this class to register components to be used at runtime / without the Equinox extension registry.
@@ -21,6 +23,10 @@ class ModaneRuntimeModule extends AbstractModaneRuntimeModule
 	def Class<? extends IOutputConfigurationProvider> bindIOutputConfigurationProvider()
 	{
 		typeof(ModaneOutputConfigurationProvider)
+	}
+	
+	def Class<? extends ICrossReferenceSerializer> bindICrossReferenceSerializer() {
+		typeof(ModaneCrossReferenceSerializer)
 	}
 
 	override Class<? extends IQualifiedNameProvider> bindIQualifiedNameProvider()
