@@ -153,6 +153,7 @@ class ModaneFormatter extends AbstractFormatter2
 	
 	def dispatch void format(OverrideFunction elt, extension IFormattableDocument document)
 	{
+		elt.addNewLine(document)
 		elt.regionFor.keyword('(').surround[noSpace]
 		elt.regionFor.keyword(')').prepend[noSpace]
 		

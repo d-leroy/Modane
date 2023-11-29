@@ -390,8 +390,9 @@ class UmlToModane
 			val c = v.toUmlClass
 			if (c.abstract) args += c.toVarDefinition(interfaceOp.funcInVars.contains(v), true)
 		}
-		for ( p : interfaceOp.inOutParameters) args += p.toArgument
-		for ( p : interfaceOp.inOutParameters) args += p.toArgument
+		for ( p : interfaceOp.inOutParameters) {
+			args += EcoreUtil::copy(p.toArgument)
+		}
 		
 		// ajout des vars propres à l'implémentation
 		for (v : o.funcInNotOutVars) vars += v.toUmlClass.toVariable.toVarReference(true, false)
